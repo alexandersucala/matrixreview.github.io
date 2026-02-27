@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MatrixReview — AI Code Review That Reads Your Docs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Patent-backed AI code review grounded in your team's documentation. Not generic best practices. Your rules, your standards, enforced on every PR.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════
+       CSS RESET & VARIABLES
+       ═══════════════════════════════════════════════ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green-bright: #00ff41;
+      --green-mid: #00cc33;
+      --green-dim: #00991a;
+      --green-dark: #004d0d;
+      --green-glow: rgba(0, 255, 65, 0.15);
+      --green-glow-strong: rgba(0, 255, 65, 0.35);
+      --bg-black: #000000;
+      --bg-card: #0a0a0a;
+      --bg-card-hover: #0f1a0f;
+      --border-green: rgba(0, 255, 65, 0.12);
+      --border-green-hover: rgba(0, 255, 65, 0.3);
+      --text-primary: #e0e0e0;
+      --text-secondary: #999;
+      --font-mono: 'Share Tech Mono', 'Courier New', monospace;
+      --font-body: 'Outfit', -apple-system, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg-black);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      line-height: 1.7;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ═══════════════════════════════════════════════
+       MATRIX RAIN CANVAS
+       ═══════════════════════════════════════════════ */
+    #matrix-rain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.12;
+    }
+
+    /* ═══════════════════════════════════════════════
+       LAYOUT
+       ═══════════════════════════════════════════════ */
+    .content-layer {
+      position: relative;
+      z-index: 1;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section {
+      padding: 100px 0;
+    }
+
+    /* ═══════════════════════════════════════════════
+       NAVIGATION
+       ═══════════════════════════════════════════════ */
+    .topnav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-green);
+      padding: 0 24px;
+    }
+
+    .topnav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .topnav-brand {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--green-bright);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 20px var(--green-glow-strong);
+    }
+
+    .topnav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .topnav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+
+    .topnav-links a:hover {
+      color: var(--green-bright);
+    }
+
+    .topnav-cta {
+      padding: 8px 20px !important;
+      background: var(--green-bright) !important;
+      color: #000 !important;
+      border-radius: 6px;
+      font-weight: 700 !important;
+      font-size: 0.85rem !important;
+      transition: all 0.2s !important;
+    }
+
+    .topnav-cta:hover {
+      background: #fff !important;
+      color: #000 !important;
+      box-shadow: 0 0 24px var(--green-glow-strong);
+    }
+
+    /* ═══════════════════════════════════════════════
+       HERO
+       ═══════════════════════════════════════════════ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding-top: 64px;
+      position: relative;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      background: linear-gradient(to top, var(--bg-black), transparent);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 850px;
+      padding: 0 24px;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--green-mid);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.2s forwards;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 6vw, 4.8rem);
+      font-weight: 900;
+      line-height: 1.05;
+      color: #fff;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.4s forwards;
+    }
+
+    .hero h1 .green {
+      color: var(--green-bright);
+      text-shadow: 0 0 40px var(--green-glow-strong), 0 0 80px var(--green-glow);
+    }
+
+    .hero-sub {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      max-width: 640px;
+      margin: 0 auto 40px;
+      line-height: 1.8;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.6s forwards;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.8s forwards;
+    }
+
+    /* ═══════════════════════════════════════════════
+       BUTTONS
+       ═══════════════════════════════════════════════ */
+    .btn-primary {
+      display: inline-block;
+      padding: 14px 32px;
+      background: var(--green-bright);
+      color: #000;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+      transition: all 0.25s;
+      border: 2px solid var(--green-bright);
+    }
+
+    .btn-primary:hover {
+      background: transparent;
+      color: var(--green-bright);
+      box-shadow: 0 0 30px var(--green-glow-strong), inset 0 0 30px var(--green-glow);
+    }
+
+    .btn-secondary {
+      display: inline-block;
+      padding: 14px 32px;
+      background: transparent;
+      color: var(--green-bright);
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      border: 2px solid var(--border-green-hover);
+      transition: all 0.25s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--green-bright);
+      box-shadow: 0 0 20px var(--green-glow);
+    }
+
+    /* ═══════════════════════════════════════════════
+       SECTION HEADERS
+       ═══════════════════════════════════════════════ */
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--green-mid);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 20px;
+      line-height: 1.15;
+    }
+
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 680px;
+      line-height: 1.8;
+    }
+
+    /* ═══════════════════════════════════════════════
+       WHAT IS MATRIXREVIEW — INTRO SECTION
+       ═══════════════════════════════════════════════ */
+    #what .intro-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      margin-top: 60px;
+      align-items: start;
+    }
+
+    .intro-text p {
+      margin-bottom: 20px;
+      color: var(--text-primary);
+      font-size: 1.05rem;
+    }
+
+    .intro-text strong {
+      color: var(--green-bright);
+    }
+
+    .intro-highlight-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-green);
+      border-radius: 12px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .intro-highlight-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green-bright), transparent);
+    }
+
+    .intro-highlight-box h3 {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--green-mid);
+      margin-bottom: 20px;
+      letter-spacing: 0.08em;
+    }
+
+    .pipeline-step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(0, 255, 65, 0.06);
+    }
+
+    .pipeline-step:last-child { border-bottom: none; }
+
+    .step-marker {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--green-bright);
+      background: rgba(0, 255, 65, 0.08);
+      padding: 4px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-text {
+      font-size: 0.92rem;
+      color: var(--text-primary);
+    }
+
+    /* ═══════════════════════════════════════════════
+       FEATURES — THE FIVE GATES
+       ═══════════════════════════════════════════════ */
+    #features {
+      background: linear-gradient(180deg, var(--bg-black) 0%, #020a02 50%, var(--bg-black) 100%);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-top: 60px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-green);
+      border-radius: 12px;
+      padding: 32px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-green-hover);
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 255, 65, 0.06);
+    }
+
+    .feature-card:hover::after {
+      background: linear-gradient(90deg, transparent, var(--green-bright), transparent);
+    }
+
+    .feature-icon {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--green-bright);
+      background: rgba(0, 255, 65, 0.08);
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 6px;
+      margin-bottom: 18px;
+      letter-spacing: 0.08em;
+    }
+
+    .feature-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    /* Wide card spanning full width */
+    .feature-card-wide {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    /* ═══════════════════════════════════════════════
+       DIFFERENTIATORS
+       ═══════════════════════════════════════════════ */
+    .diff-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 60px;
+    }
+
+    .diff-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-green);
+      border-radius: 12px;
+      padding: 28px 32px;
+      transition: all 0.3s;
+    }
+
+    .diff-card:hover {
+      border-color: var(--border-green-hover);
+    }
+
+    .diff-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .diff-card p {
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+    }
+
+    .diff-vs {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--green-dim);
+      display: block;
+      margin-top: 10px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       PATENTS SECTION
+       ═══════════════════════════════════════════════ */
+    #patents {
+      background: linear-gradient(180deg, var(--bg-black) 0%, #020502 50%, var(--bg-black) 100%);
+    }
+
+    .patents-intro {
+      max-width: 720px;
+      margin-bottom: 60px;
+    }
+
+    .patents-intro p {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      margin-top: 16px;
+    }
+
+    .patent-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .patent-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-green);
+      border-radius: 10px;
+      padding: 24px 28px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      transition: all 0.25s;
+    }
+
+    .patent-item:hover {
+      border-color: var(--border-green-hover);
+      background: var(--bg-card-hover);
+    }
+
+    .patent-id {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--green-bright);
+      background: rgba(0, 255, 65, 0.06);
+      padding: 6px 12px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .patent-info h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .patent-info p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .patent-count-badge {
+      font-family: var(--font-mono);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--green-bright);
+      text-shadow: 0 0 40px var(--green-glow-strong);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       DEEP DIVE — HOW IT WORKS
+       ═══════════════════════════════════════════════ */
+    .deepdive-content {
+      margin-top: 60px;
+    }
+
+    .deepdive-block {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 40px;
+      padding: 48px 0;
+      border-bottom: 1px solid var(--border-green);
+      align-items: start;
+    }
+
+    .deepdive-block:last-child { border-bottom: none; }
+
+    .deepdive-label {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--green-mid);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      position: sticky;
+      top: 80px;
+    }
+
+    .deepdive-label .num {
+      display: block;
+      font-size: 2rem;
+      color: var(--green-bright);
+      text-shadow: 0 0 20px var(--green-glow);
+      margin-bottom: 8px;
+    }
+
+    .deepdive-text h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .deepdive-text p {
+      color: var(--text-primary);
+      font-size: 1rem;
+      margin-bottom: 16px;
+      line-height: 1.8;
+    }
+
+    .deepdive-text p:last-child { margin-bottom: 0; }
+
+    /* ═══════════════════════════════════════════════
+       CTA SECTION
+       ═══════════════════════════════════════════════ */
+    .cta-section {
+      text-align: center;
+      padding: 120px 0;
+      position: relative;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--green-glow) 0%, transparent 70%);
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    .cta-section h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .cta-section p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      margin-bottom: 40px;
+      max-width: 550px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ═══════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════ */
+    footer {
+      border-top: 1px solid var(--border-green);
+      padding: 40px 0;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-brand {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--green-dim);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--green-bright);
+    }
+
+    /* ═══════════════════════════════════════════════
+       ANIMATIONS
+       ═══════════════════════════════════════════════ */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .topnav-links { gap: 16px; }
+      .topnav-links a:not(.topnav-cta) { display: none; }
+
+      #what .intro-grid { grid-template-columns: 1fr; gap: 40px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .feature-card-wide { grid-template-columns: 1fr; }
+      .diff-grid { grid-template-columns: 1fr; }
+      .deepdive-block { grid-template-columns: 1fr; gap: 16px; }
+      .deepdive-label { position: static; }
+
+      section { padding: 60px 0; }
+      .hero { min-height: 90vh; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       SCROLLBAR
+       ═══════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     MATRIX RAIN CANVAS
+     ═══════════════════════════════════════════════════ -->
+<canvas id="matrix-rain"></canvas>
+
+<!-- ═══════════════════════════════════════════════════
+     CONTENT LAYER
+     ═══════════════════════════════════════════════════ -->
+<div class="content-layer">
+
+  <!-- NAV -->
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="/" class="topnav-brand">MatrixReview</a>
+      <div class="topnav-links">
+        <a href="#what">Product</a>
+        <a href="#features">Features</a>
+        <a href="#patents">Patents</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="https://github.com/apps/codereview-ai-dev" class="topnav-cta">Install Free →</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="hero-eyebrow">Patent-Protected AI Code Review</p>
+      <h1>The Code Review<br><span class="green">Revolution</span> Is Here.</h1>
+      <p class="hero-sub">
+        AI code review that actually reads your documentation. Not generic best practices.
+        Your rules. Your standards. Enforced on every pull request — with citations.
+      </p>
+      <div class="hero-buttons">
+        <a href="https://github.com/apps/codereview-ai-dev" class="btn-primary">Install on GitHub — Free</a>
+        <a href="#what" class="btn-secondary">See How It Works</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ WHAT IS MATRIXREVIEW ═══════════════ -->
+  <section id="what">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-eyebrow">// What is MatrixReview</p>
+        <h2 class="section-title">Your docs become<br>your reviewer.</h2>
+        <p class="section-subtitle">
+          Every engineering team writes documentation — security policies, architecture standards,
+          style guides, contribution rules. MatrixReview reads all of it, then enforces it on every PR.
+          Automatically.
+        </p>
+      </div>
+
+      <div class="intro-grid reveal">
+        <div class="intro-text">
+          <p>
+            Generic AI code review tools give opinions based on general best practices.
+            MatrixReview gives <strong>document-backed findings</strong> — every flag references
+            your company's own documentation, not someone else's standards.
+          </p>
+          <p>
+            Findings are tagged <strong>🔍 DOC-BACKED</strong> or <strong>💭 AI SUGGESTION</strong>
+            so your team knows exactly what's policy and what's observation. Doc-backed findings
+            cite the specific document, section title, and line range.
+          </p>
+          <p>
+            When you install, MatrixReview auto-discovers your repository's documentation,
+            classifies it into review categories, and builds a knowledge base unique to your codebase.
+            No configuration files. No rule authoring. Just install and open a PR.
+          </p>
+        </div>
+
+        <div class="intro-highlight-box">
+          <h3>// Review Pipeline</h3>
+          <div class="pipeline-step">
+            <span class="step-marker">WEBHOOK</span>
+            <span class="step-text">GitHub PR opened or updated — triggers review</span>
+          </div>
+          <div class="pipeline-step">
+            <span class="step-marker">DISCOVER</span>
+            <span class="step-text">Auto-scan repo tree, fetch docs, classify into gates</span>
+          </div>
+          <div class="pipeline-step">
+            <span class="step-marker">DECOMPOSE</span>
+            <span class="step-text">Split multi-topic docs into gate-specific sections</span>
+          </div>
+          <div class="pipeline-step">
+            <span class="step-marker">PASS 1</span>
+            <span class="step-text">Five parallel gate reviews against your documentation</span>
+          </div>
+          <div class="pipeline-step">
+            <span class="step-marker">PASS 2</span>
+            <span class="step-text">Hallucination guard — kills unproven findings</span>
+          </div>
+          <div class="pipeline-step">
+            <span class="step-marker">OUTPUT</span>
+            <span class="step-text">Traffic light (RED / YELLOW / GREEN) with cited findings</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FEATURES — THE FIVE GATES ═══════════════ -->
+  <section id="features">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-eyebrow">// Review Gates</p>
+        <h2 class="section-title">Five gates. Zero guesswork.</h2>
+        <p class="section-subtitle">
+          Every PR is reviewed across five specialized gates. Each gate pulls only the documents
+          relevant to its category and reviews the diff against that subset.
+        </p>
+      </div>
+
+      <div class="features-grid reveal">
+        <div class="feature-card">
+          <span class="feature-icon">GATE:SECURITY</span>
+          <h3>Security</h3>
+          <p>API keys, auth patterns, secrets in code, data exposure, injection risks. Reviewed against your security policies and incident response docs.</p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">GATE:ARCHITECTURE</span>
+          <h3>Architecture</h3>
+          <p>Design patterns, module boundaries, dependency rules, API contracts. Catches architectural drift before it becomes tech debt.</p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">GATE:LEGAL</span>
+          <h3>Legal & Compliance</h3>
+          <p>Licensing, CLA requirements, copyright headers, redistribution compliance. Every commit checked against your legal requirements.</p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">GATE:STYLE</span>
+          <h3>Style & Standards</h3>
+          <p>Naming conventions, formatting, linting, import order, code standards. Your style guide enforced automatically — not someone else's opinion.</p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">GATE:ONBOARDING</span>
+          <h3>Onboarding & Process</h3>
+          <p>PR process, testing requirements, commit format, contribution workflow. New contributors stay in compliance from their first PR.</p>
+        </div>
+
+        <!-- Wide card: Two-pass hallucination guard -->
+        <div class="feature-card feature-card-wide">
+          <div>
+            <span class="feature-icon">SYSTEM:VERIFICATION</span>
+            <h3>Two-Pass Hallucination Guard</h3>
+            <p>Every finding goes through a two-pass verification pipeline before it reaches the PR. Pass 1 generates findings by reviewing the diff against your documentation. Pass 2 is a separate verification model that re-reads each finding against the source document and asks: can this be proven from what's written?</p>
+            <p style="margin-top: 12px;">If the answer is no, the finding gets killed. Findings that can't survive verification never reach your PR comment. This isn't a confidence threshold — it's a second model independently checking the first model's work.</p>
+          </div>
+          <div>
+            <span class="feature-icon">SYSTEM:FRESHNESS</span>
+            <h3>Auto-Updating Knowledge Base</h3>
+            <p>Docs stay fresh automatically. Someone updates a security policy, merges a new architecture decision, adds a testing requirement — MatrixReview detects the change via SHA comparison before the next review and re-ingests the updated content.</p>
+            <p style="margin-top: 12px;">No stale rules. No re-setup. The knowledge base tracks the repo. If a document can't be fetched during the freshness check, the review runs with cached docs — because stale docs are better than no review.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- DIFFERENTIATORS -->
+      <div style="margin-top: 80px;" class="reveal">
+        <p class="section-eyebrow">// Why MatrixReview</p>
+        <h2 class="section-title">What makes us different.</h2>
+      </div>
+
+      <div class="diff-grid reveal">
+        <div class="diff-card">
+          <h3>Document-Grounded, Not Opinion-Based</h3>
+          <p>Every finding cites your team's actual documentation — the specific document, section title, and line range. Not generic advice from a training set.</p>
+          <span class="diff-vs">vs. competitors who give general "best practice" suggestions</span>
+        </div>
+        <div class="diff-card">
+          <h3>Fail-Closed Architecture</h3>
+          <p>If the system can't prove a finding from your documentation, the finding doesn't ship. If GitHub is unreachable, the review degrades gracefully — never fails silently.</p>
+          <span class="diff-vs">vs. systems that pass everything through when uncertain</span>
+        </div>
+        <div class="diff-card">
+          <h3>Zero Configuration</h3>
+          <p>Install the app. Open a PR. That's it. MatrixReview auto-discovers your docs, classifies them, and builds your review knowledge base. No YAML files. No rule authoring.</p>
+          <span class="diff-vs">vs. tools that require hours of setup and config files</span>
+        </div>
+        <div class="diff-card">
+          <h3>Transparent Finding Types</h3>
+          <p>Every finding is clearly tagged DOC-BACKED or AI SUGGESTION. Your team always knows what's policy enforcement and what's the model's opinion.</p>
+          <span class="diff-vs">vs. tools that blend opinions with rules into a single output</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ PATENTS ═══════════════ -->
+  <section id="patents">
+    <div class="container">
+      <div class="patents-intro reveal">
+        <p class="section-eyebrow">// Intellectual Property</p>
+        <h2 class="section-title">Patent-protected architecture.</h2>
+        <p>MatrixReview isn't just another AI wrapper — it's built on a portfolio of provisional patent filings
+          covering the core architectures that make reliable AI code review possible. This isn't technology
+          anyone can copy.</p>
+      </div>
+
+      <div class="patent-list reveal">
+        <div class="patent-item">
+          <span class="patent-id">CR-1</span>
+          <div class="patent-info">
+            <h4>Fail-Closed Execution Systems for Validity-by-Construction</h4>
+            <p>System architectures that prevent execution from completing unless required structural conditions are satisfied, ensuring results are trustworthy by construction rather than validated after the fact.</p>
+          </div>
+        </div>
+
+        <div class="patent-item">
+          <span class="patent-id">CR-2</span>
+          <div class="patent-info">
+            <h4>Multi-Dimensional Quality Decomposition with Independent Assessment</h4>
+            <p>The traffic light system — decomposing code quality into independent dimensions (security, architecture, style, legal, onboarding) assessed separately rather than collapsed into a single score.</p>
+          </div>
+        </div>
+
+        <div class="patent-item">
+          <span class="patent-id">CR-3</span>
+          <div class="patent-info">
+            <h4>Multi-Gate Document Discovery, Classification & Decomposition</h4>
+            <p>Automated pipeline that discovers repository documentation, classifies it into review categories using cascading deterministic-to-probabilistic methods, and surgically decomposes multi-topic documents into gate-specific sections.</p>
+          </div>
+        </div>
+
+        <div class="patent-item">
+          <span class="patent-id">CR-4</span>
+          <div class="patent-info">
+            <h4>Two-Pass Document-Grounded Verification with Drift Detection</h4>
+            <p>Independent verification model that re-reads each finding against source documentation to kill unproven claims, with statistical tracking of removal rates per gate to detect and surface prompt drift.</p>
+          </div>
+        </div>
+
+        <div class="patent-item">
+          <span class="patent-id">CR-5</span>
+          <div class="patent-info">
+            <h4>Source-Typed Confidence Classification with Provenance</h4>
+            <p>Every finding typed as DOCUMENT_BACKED or LLM_OPINION with enforced constraints — AI opinions structurally cannot be classified as policy violations. Provenance includes specific document, section, and line range.</p>
+          </div>
+        </div>
+
+        <div class="patent-item">
+          <span class="patent-id">SYS</span>
+          <div class="patent-info">
+            <h4>Configurable Hallucination Verification Framework</h4>
+            <p>Multi-mode detection with domain-adaptive rigor for systems operating on authoritative ground truth. The foundational verification architecture that powers the entire review pipeline.</p>
+          </div>
+        </div>
+
+        <div class="patent-item">
+          <span class="patent-id">SYS</span>
+          <div class="patent-info">
+            <h4>Artifact-Governed Stateless Context Reconstruction</h4>
+            <p>AI-assisted software modification using externalized authority — stateless context rehydration that ensures reproducible, auditable modifications across sessions independent of AI memory.</p>
+          </div>
+        </div>
+
+        <div class="patent-item">
+          <span class="patent-id">SYS</span>
+          <div class="patent-info">
+            <h4>Multi-Stage Language Model Pipeline for Policy-Compliant Generation</h4>
+            <p>Cascading gate architecture ensuring AI outputs pass through multiple verification stages before reaching users, with fail-closed behavior at each stage.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 48px;" class="reveal">
+        <span class="patent-count-badge">30+</span>
+        <p style="color: var(--text-secondary); font-size: 1rem;">provisional patents filed across AI safety, deterministic verification, and autonomous systems</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ DEEP DIVE ═══════════════ -->
+  <section id="how-it-works">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-eyebrow">// Deep Dive</p>
+        <h2 class="section-title">How it actually works.</h2>
+        <p class="section-subtitle">
+          Under the hood, MatrixReview is a fail-closed execution system. Here's what happens
+          from the moment you install to the moment findings land on your PR.
+        </p>
+      </div>
+
+      <div class="deepdive-content">
+        <div class="deepdive-block reveal">
+          <div class="deepdive-label">
+            <span class="num">01</span>
+            INSTALLATION &<br>DISCOVERY
+          </div>
+          <div class="deepdive-text">
+            <h3>Install once. Setup handles itself.</h3>
+            <p>When you install MatrixReview on a repository, the discovery module scans your entire repo tree in a single API call. It identifies documentation files — markdown, rst, txt — and classifies each one into review gates using a three-step pipeline.</p>
+            <p>Step 1: Filename heuristics match known patterns (~80% accuracy). Step 2: LLM content analysis reads the actual document (~95% accuracy). Step 3: You confirm the classifications in a visual UI (100% accuracy). The system is honest about what it knows and what it's guessing.</p>
+            <p>The discovery module has its own fallback chain: full tree scan via the git/trees API first (single request, fastest), targeted path checks via the contents API if the tree is truncated, and an empty-with-flag return if the API is down entirely.</p>
+          </div>
+        </div>
+
+        <div class="deepdive-block reveal">
+          <div class="deepdive-label">
+            <span class="num">02</span>
+            DOCUMENT<br>DECOMPOSITION
+          </div>
+          <div class="deepdive-text">
+            <h3>One doc, multiple gates — handled surgically.</h3>
+            <p>Real-world documentation doesn't follow neat categories. A CONTRIBUTING.md might contain security policies, style rules, and PR process requirements all in one file. The decomposer handles this.</p>
+            <p>Step 1: LLM identifies distinct topical sections with line ranges. Step 2: Content is extracted using those line ranges — deterministic extraction, not LLM regeneration. The AI identifies where sections are; code pulls the content by line number. This means the extracted text is exactly what was written, never a paraphrase or hallucination.</p>
+          </div>
+        </div>
+
+        <div class="deepdive-block reveal">
+          <div class="deepdive-label">
+            <span class="num">03</span>
+            THE REVIEW<br>PIPELINE
+          </div>
+          <div class="deepdive-text">
+            <h3>Five gates, two passes, zero hallucinations shipped.</h3>
+            <p>When a PR is opened, five gate reviews run in parallel. Each gate loads only the documents relevant to its category — Security doesn't see your style guide, Architecture doesn't see your CLA requirements. This focused context produces more accurate findings.</p>
+            <p>Pass 1 generates structured findings with citations. Pass 2 is a completely separate verification model that re-reads every finding against the source document. If a finding can't be proven from what's written, it gets killed. Pass 2 also tracks removal rates per gate — if a gate's findings are getting killed at a high rate, it flags the prompt for tuning. The system monitors its own accuracy.</p>
+            <p>The output is a traffic light: RED (blocking issues found), YELLOW (fixable issues), or GREEN (ready to merge). Every finding includes the source document, section, and whether it's doc-backed or an AI observation.</p>
+          </div>
+        </div>
+
+        <div class="deepdive-block reveal">
+          <div class="deepdive-label">
+            <span class="num">04</span>
+            FAIL-CLOSED<br>EVERYWHERE
+          </div>
+          <div class="deepdive-text">
+            <h3>Every decision path has a fallback.</h3>
+            <p>MatrixReview is built on a fail-closed architecture. If the system can't prove a finding from your documentation, the finding doesn't ship. If GitHub is unreachable, the review degrades gracefully and posts an error comment rather than failing silently. If a document can't be fetched during freshness check, the review runs with cached docs — stale docs are better than no review.</p>
+            <p>Structured logging with JSON output and request IDs runs through the entire pipeline. Every scan, classification, decomposition, review, and verification step is traceable. When something goes wrong, you can follow the exact path of execution. When something goes right, you can prove it.</p>
+          </div>
+        </div>
+
+        <div class="deepdive-block reveal">
+          <div class="deepdive-label">
+            <span class="num">05</span>
+            WHAT'S<br>COMING
+          </div>
+          <div class="deepdive-text">
+            <h3>V2: From PR-level to codebase-level intelligence.</h3>
+            <p>Tier 1 is everything above — document-grounded PR review with five gates and two-pass verification. Tier 2 adds full codebase analysis on setup. When you install, MatrixReview scores your entire repository across all five gates with a baseline strength rating for each.</p>
+            <p>A historical dashboard tracks how each gate trends over time. Are your security practices improving since last month? Is architectural drift creeping in? Are new contributors following the PR process? Tier 1 tells you what's wrong with this PR. Tier 2 tells you what's happening to your codebase.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ CTA ═══════════════ -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-eyebrow">// Get Started</p>
+        <h2>Ready to see the <span style="color: var(--green-bright);">Matrix</span>?</h2>
+        <p>Free during beta. Install in 30 seconds. Open a PR and watch it work.</p>
+        <div class="hero-buttons">
+          <a href="https://github.com/apps/codereview-ai-dev" class="btn-primary">Install on GitHub — Free</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-brand">© <span id="yr"></span> MatrixReview</span>
+        <div class="footer-links">
+          <a href="/privacy.html">Privacy Policy</a>
+          <a href="/terms.html">Terms of Service</a>
+          <a href="mailto:contact@matrixreview.io">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════ -->
+<script>
+// Year
+document.getElementById('yr').textContent = new Date().getFullYear();
+
+// ─── Matrix Rain ───────────────────────────────────
+(function() {
+  const canvas = document.getElementById('matrix-rain');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const fontSize = 14;
+  const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ{}[]<>/\\|=+-*&^%$#@!';
+  const columns = Math.floor(canvas.width / fontSize);
+  const drops = new Array(columns).fill(1);
+
+  // Randomize initial positions so it doesn't start as a uniform wall
+  for (let i = 0; i < drops.length; i++) {
+    drops[i] = Math.random() * -100;
+  }
+
+  function draw() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#00ff41';
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+      if (drops[i] < 0) {
+        drops[i]++;
+        continue;
+      }
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+
+      // Brighter head character
+      ctx.fillStyle = Math.random() > 0.95 ? '#ffffff' : '#00ff41';
+      ctx.fillText(char, x, y);
+      ctx.fillStyle = '#00ff41';
+
+      if (y > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  setInterval(draw, 45);
+})();
+
+// ─── Scroll Reveal ─────────────────────────────────
+(function() {
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+
+  reveals.forEach(el => observer.observe(el));
+})();
+
+// ─── Smooth scroll for nav links ───────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+
+</body>
+</html>
