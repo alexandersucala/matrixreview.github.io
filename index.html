@@ -149,24 +149,18 @@
        HERO
        ═══════════════════════════════════════════════ */
     .hero {
-      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding-top: 64px;
+      padding-top: 160px;
+      padding-bottom: 80px;
+      margin-bottom: 0;
       position: relative;
     }
 
     .hero::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 200px;
-      background: linear-gradient(to top, var(--bg-black), transparent);
-      pointer-events: none;
+      content: none;
     }
 
     .hero-content {
@@ -552,8 +546,7 @@
       font-family: var(--font-mono);
       font-size: 2.5rem;
       font-weight: 700;
-      color: var(--green-bright);
-      text-shadow: 0 0 40px var(--green-glow-strong);
+      color: #fff;
       display: block;
       margin-bottom: 8px;
     }
@@ -646,6 +639,15 @@
       max-width: 550px;
       margin-left: auto;
       margin-right: auto;
+    }
+
+    .cta-section .section-eyebrow {
+      color: var(--green-mid);
+      font-size: 0.95rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      font-family: var(--font-mono);
     }
 
     /* ═══════════════════════════════════════════════
@@ -943,24 +945,24 @@
         <div class="patent-item">
           <span class="patent-id">MR-1</span>
           <div class="patent-info">
-            <h4>Fail-Closed Execution Systems for Validity-by-Construction</h4>
-            <p>System architectures that prevent execution from completing unless required structural conditions are satisfied, ensuring results are trustworthy by construction rather than validated after the fact.</p>
+            <h4>Multi-Dimensional Quality Decomposition with Independent Assessment</h4>
+            <p>The traffic light system. Decomposes code quality into independent dimensions (security, architecture, style, legal, onboarding) assessed separately with configurable thresholds and worst-case aggregation rather than collapsed into a single score.</p>
           </div>
         </div>
 
         <div class="patent-item">
           <span class="patent-id">MR-2</span>
           <div class="patent-info">
-            <h4>Multi-Dimensional Quality Decomposition with Independent Assessment</h4>
-            <p>The traffic light system. Decomposing code quality into independent dimensions (security, architecture, style, legal, onboarding) assessed separately rather than collapsed into a single score.</p>
+            <h4>Automated Document Discovery and Cascading Classification Pipeline</h4>
+            <p>Multi-tier fallback classification that discovers repository documentation and classifies it into review gates using cascading deterministic-to-probabilistic methods with human-in-the-loop confirmation. The core of the two-minute setup.</p>
           </div>
         </div>
 
         <div class="patent-item">
           <span class="patent-id">MR-3</span>
           <div class="patent-info">
-            <h4>Multi-Gate Document Discovery, Classification & Decomposition</h4>
-            <p>Automated pipeline that discovers repository documentation, classifies it into review categories using cascading deterministic-to-probabilistic methods, and surgically decomposes multi-topic documents into gate-specific sections.</p>
+            <h4>Probabilistic Boundary Identification with Deterministic Content Extraction</h4>
+            <p>The document decomposer. LLM identifies section boundaries with line ranges. Code extracts content by line number. The AI identifies WHERE sections are. Code pulls the content. Extracted text is exactly what was written, never a paraphrase.</p>
           </div>
         </div>
 
@@ -975,8 +977,8 @@
         <div class="patent-item">
           <span class="patent-id">MR-5</span>
           <div class="patent-info">
-            <h4>Source-Typed Confidence Classification with Provenance</h4>
-            <p>Every finding typed as DOCUMENT_BACKED or LLM_OPINION with enforced constraints. AI opinions structurally cannot be classified as policy violations. Provenance includes specific document, section, and line range.</p>
+            <h4>Source-Typed Confidence Classification with Code-Enforced Restrictions</h4>
+            <p>Every finding typed as DOCUMENT_BACKED or LLM_OPINION with code-enforced type restrictions. AI opinions structurally cannot be classified as policy violations. Provenance includes specific document, section, and line range.</p>
           </div>
         </div>
 
@@ -991,8 +993,16 @@
         <div class="patent-item">
           <span class="patent-id">SYS</span>
           <div class="patent-info">
+            <h4>Fail-Closed Execution Governance for Deterministic Workflows</h4>
+            <p>System architectures that prevent execution from completing unless required structural conditions are satisfied. Results are trustworthy by construction, not validated after the fact.</p>
+          </div>
+        </div>
+
+        <div class="patent-item">
+          <span class="patent-id">SYS</span>
+          <div class="patent-info">
             <h4>Artifact-Governed Stateless Context Reconstruction</h4>
-            <p>AI-assisted software modification using externalized authority. Stateless context rehydration that ensures reproducible, auditable modifications across sessions independent of AI memory.</p>
+            <p>Externalized authority for AI-assisted software modification. Stateless context rehydration that ensures reproducible, auditable modifications across sessions independent of AI memory.</p>
           </div>
         </div>
 
@@ -1006,8 +1016,8 @@
       </div>
 
       <div style="text-align: center; margin-top: 48px;" class="reveal">
-        <span class="patent-count-badge">30+</span>
-        <p style="color: var(--text-secondary); font-size: 1rem;">provisional patents filed across AI safety, deterministic verification, and autonomous systems</p>
+        <span class="patent-count-badge">21+</span>
+        <p style="color: var(--green-bright); font-size: 1.05rem; font-family: var(--font-mono);">provisional patents filed across AI safety, deterministic verification, and autonomous systems</p>
       </div>
     </div>
   </section>
