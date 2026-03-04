@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beta Feedback | MatrixReview</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-black: #050505;
+      --green-bright: #00ff41;
+      --green-mid: #00cc33;
+      --green-dim: #00aa2a;
+      --green-glow: rgba(0, 255, 65, 0.08);
+      --green-glow-strong: rgba(0, 255, 65, 0.15);
+      --text-primary: #e0e0e0;
+      --text-muted: #888;
+      --border-green: rgba(0, 255, 65, 0.12);
+      --border-green-hover: rgba(0, 255, 65, 0.3);
+      --bg-card: #0a0a0a;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Share Tech Mono', 'Fira Code', monospace;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-black);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* MATRIX RAIN */
+    #matrix-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      opacity: 0.225;
+    }
+
+    /* NAV */
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(5, 5, 5, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-green);
+      padding: 16px 0;
+    }
+
+    .topnav .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topnav-logo {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      color: var(--green-bright);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+    }
+
+    .topnav-links { display: flex; gap: 28px; align-items: center; }
+    .topnav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .topnav-links a:hover { color: var(--green-bright); }
+
+    .topnav-cta {
+      background: var(--green-bright) !important;
+      color: #000 !important;
+      font-weight: 600 !important;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 0.85rem !important;
+      transition: box-shadow 0.3s, transform 0.2s;
+    }
+    .topnav-cta:hover {
+      box-shadow: 0 0 24px var(--green-glow-strong);
+      transform: translateY(-1px);
+    }
+
+    /* CONTENT */
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .page-content {
+      position: relative;
+      z-index: 1;
+      padding: 80px 0 120px;
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--green-mid);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .page-subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: 48px;
+    }
+
+    /* FORM */
+    .feedback-form {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--green-mid);
+      letter-spacing: 0.05em;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--bg-card);
+      border: 1px solid var(--border-green);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--green-bright);
+      box-shadow: 0 0 12px var(--green-glow);
+    }
+
+    .form-group textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .form-group select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300cc33' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+
+    .form-group select option {
+      background: #0a0a0a;
+      color: var(--text-primary);
+    }
+
+    .btn-submit {
+      display: inline-block;
+      background: var(--green-bright);
+      color: #000;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 16px 40px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      letter-spacing: 0.02em;
+      transition: box-shadow 0.3s, transform 0.2s;
+      align-self: flex-start;
+    }
+
+    .btn-submit:hover {
+      box-shadow: 0 0 24px var(--green-glow-strong);
+      transform: translateY(-2px);
+    }
+
+    .privacy-note {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border-green);
+      padding: 40px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--green-bright); }
+
+    /* BETA BANNER */
+    .beta-banner {
+      background: #fff;
+      color: #000;
+      text-align: center;
+      padding: 10px 0;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1001;
+    }
+
+    @media (max-width: 600px) {
+      .topnav-links { gap: 16px; }
+      .btn-submit { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="matrix-bg"></canvas>
+
+<!-- BETA BANNER -->
+<div class="beta-banner">In Beta Testing Now</div>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="container" style="max-width: 1100px;">
+    <a href="index.html" class="topnav-logo">MatrixReview</a>
+    <div class="topnav-links">
+      <a href="index.html">Home</a>
+      <a href="https://github.com/apps/matrixreview" class="topnav-cta">Install Free</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-content">
+  <div class="container">
+    <p class="section-eyebrow">// Beta Feedback</p>
+    <h1>How did MatrixReview work for you?</h1>
+    <p class="page-subtitle">
+      Your feedback shapes the product. Tell us what worked, what didn't, and what you want to see next. All submissions go directly to the team and are not shared publicly.
+    </p>
+
+    <div class="feedback-form" id="feedbackForm">
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="fname" placeholder="Name or GitHub handle" required>
+      </div>
+
+      <div class="form-group">
+        <label>Email (optional)</label>
+        <input type="email" id="femail" placeholder="For follow-up questions">
+      </div>
+
+      <div class="form-group">
+        <label>Repository Tested</label>
+        <input type="text" id="frepo" placeholder="e.g. myorg/myrepo">
+      </div>
+
+      <div class="form-group">
+        <label>Overall Rating</label>
+        <select id="frating">
+          <option value="">Select a rating</option>
+          <option value="5">5. Excellent. Would recommend immediately.</option>
+          <option value="4">4. Good. A few rough edges but solid.</option>
+          <option value="3">3. Decent. Needs work but shows promise.</option>
+          <option value="2">2. Below expectations. Significant issues.</option>
+          <option value="1">1. Did not work for our use case.</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>What worked well?</label>
+        <textarea id="fworked" placeholder="Which findings were useful? Was the setup smooth? Did citations make sense?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>What needs improvement?</label>
+        <textarea id="fimprove" placeholder="False positives? Missing coverage? Confusing output? Be as specific as you want."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Anything else?</label>
+        <textarea id="fother" placeholder="Feature requests, questions, general thoughts."></textarea>
+      </div>
+
+      <button class="btn-submit" onclick="submitFeedback()">Submit Feedback</button>
+      <p class="privacy-note">Submissions are sent directly to admin@matrixreview.io. Nothing is stored on this page or shared publicly.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-copy">&copy; 2026 CodeReview AI LLC. All rights reserved.</span>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="mailto:admin@matrixreview.io">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Matrix rain
+const c = document.getElementById('matrix-bg');
+const ctx = c.getContext('2d');
+function resizeCanvas() { c.width = window.innerWidth; c.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ<>/{}[];=';
+const fontSize = 14;
+let columns, drops;
+function initDrops() {
+  columns = Math.floor(c.width / fontSize);
+  drops = Array.from({length: columns}, () => Math.random() * -100);
+}
+initDrops();
+window.addEventListener('resize', initDrops);
+function draw() {
+  ctx.fillStyle = 'rgba(5, 5, 5, 0.08)';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#00ff41';
+  ctx.font = fontSize + 'px monospace';
+  for (let i = 0; i < drops.length; i++) {
+    const text = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+    if (drops[i] * fontSize > c.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  }
+}
+setInterval(draw, 45);
+
+// Form submission via mailto
+function submitFeedback() {
+  const name = document.getElementById('fname').value.trim();
+  const email = document.getElementById('femail').value.trim();
+  const repo = document.getElementById('frepo').value.trim();
+  const rating = document.getElementById('frating').value;
+  const worked = document.getElementById('fworked').value.trim();
+  const improve = document.getElementById('fimprove').value.trim();
+  const other = document.getElementById('fother').value.trim();
+
+  if (!name) { alert('Please enter your name.'); return; }
+  if (!rating) { alert('Please select a rating.'); return; }
+
+  const subject = encodeURIComponent('MatrixReview Beta Feedback from ' + name);
+  const body = encodeURIComponent(
+    'MATRIXREVIEW BETA FEEDBACK\n' +
+    '========================\n\n' +
+    'Name: ' + name + '\n' +
+    'Email: ' + (email || 'Not provided') + '\n' +
+    'Repository: ' + (repo || 'Not provided') + '\n' +
+    'Rating: ' + rating + '/5\n\n' +
+    'WHAT WORKED WELL:\n' + (worked || 'No response') + '\n\n' +
+    'WHAT NEEDS IMPROVEMENT:\n' + (improve || 'No response') + '\n\n' +
+    'ANYTHING ELSE:\n' + (other || 'No response') + '\n'
+  );
+
+  window.location.href = 'mailto:admin@matrixreview.io?subject=' + subject + '&body=' + body;
+}
+</script>
+
+</body>
+</html>
