@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>MatrixReview | AI Code Review That Reads Your Docs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Patent-backed AI code review grounded in your team's documentation. Not generic best practices. Your rules, your standards, enforced on every PR.">
+  <meta name="description" content="AI code review grounded in your team's documentation. Not generic best practices. Your rules, your standards, enforced on every PR.">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -477,80 +477,6 @@
       display: block;
       margin-top: 10px;
     }
-
-    /* ═══════════════════════════════════════════════
-       PATENTS SECTION
-       ═══════════════════════════════════════════════ */
-    #patents {
-      background: transparent;
-    }
-
-    .patents-intro {
-      max-width: 720px;
-      margin-bottom: 60px;
-    }
-
-    .patents-intro p {
-      color: var(--text-secondary);
-      font-size: 1.05rem;
-      margin-top: 16px;
-    }
-
-    .patent-list {
-      display: grid;
-      gap: 16px;
-    }
-
-    .patent-item {
-      background: var(--bg-card);
-      border: 1px solid var(--border-green);
-      border-radius: 10px;
-      padding: 24px 28px;
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-      transition: all 0.25s;
-    }
-
-    .patent-item:hover {
-      border-color: var(--border-green-hover);
-      background: var(--bg-card-hover);
-    }
-
-    .patent-id {
-      font-family: var(--font-mono);
-      font-size: 0.92rem;
-      color: var(--green-bright);
-      background: rgba(0, 255, 65, 0.06);
-      padding: 8px 16px;
-      border-radius: 6px;
-      white-space: nowrap;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .patent-info h4 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 6px;
-    }
-
-    .patent-info p {
-      font-size: 0.88rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-    }
-
-    .patent-count-badge {
-      font-family: var(--font-mono);
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #fff;
-      display: block;
-      margin-bottom: 8px;
-    }
-
     /* ═══════════════════════════════════════════════
        DEEP DIVE. HOW IT WORKS
        ═══════════════════════════════════════════════ */
@@ -746,11 +672,6 @@
      ═══════════════════════════════════════════════════ -->
 <div class="content-layer">
 
-  <!-- BETA BANNER -->
-  <div style="background: #fff; color: #000; text-align: center; padding: 10px 0; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; position: relative; z-index: 1001;">
-    In Beta Testing Now
-  </div>
-
   <!-- NAV -->
   <nav class="topnav">
     <div class="topnav-inner">
@@ -758,9 +679,7 @@
       <div class="topnav-links">
         <a href="#what">Product</a>
         <a href="#features">Features</a>
-        <a href="#patents">Patents</a>
         <a href="#how-it-works">How It Works</a>
-        <a href="feedback.html">Feedback</a>
         <a href="https://github.com/apps/matrixreview" class="topnav-cta">Install Free →</a>
       </div>
     </div>
@@ -769,7 +688,7 @@
   <!-- ═══════════════ HERO ═══════════════ -->
   <section class="hero">
     <div class="hero-content">
-      <p class="hero-eyebrow">Patent-Protected AI Code Review</p>
+      <p class="hero-eyebrow">Document-Grounded AI Code Review</p>
       <h1>The Code Review<br><span class="green">Revolution</span> Is Here.</h1>
       <p class="hero-sub">
         AI code review that actually reads your documentation. Not generic best practices.
@@ -932,98 +851,6 @@
           <p>Every finding is clearly tagged DOC-BACKED or AI SUGGESTION. Your team always knows what's policy enforcement and what's the model's opinion.</p>
           <span class="diff-vs">vs. tools that blend opinions with rules into a single output</span>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════ PATENTS ═══════════════ -->
-  <section id="patents">
-    <div class="container">
-      <div class="patents-intro reveal">
-        <p class="section-eyebrow" style="color: #00cc33;">// Intellectual Property</p>
-        <h2 class="section-title">Patent-protected architecture.</h2>
-        <p>MatrixReview isn't just another AI wrapper. It's built on a portfolio of provisional patent filings
-          covering the core architectures that make reliable AI code review possible. This isn't technology
-          anyone can copy.</p>
-      </div>
-
-      <div class="patent-list reveal">
-        <div class="patent-item">
-          <span class="patent-id">MR-1</span>
-          <div class="patent-info">
-            <h4>Multi-Dimensional Quality Decomposition with Independent Assessment</h4>
-            <p>The traffic light system. Decomposes code quality into independent dimensions (security, architecture, style, legal, onboarding) assessed separately with configurable thresholds and worst-case aggregation rather than collapsed into a single score.</p>
-          </div>
-        </div>
-
-        <div class="patent-item">
-          <span class="patent-id">MR-2</span>
-          <div class="patent-info">
-            <h4>Automated Document Discovery and Cascading Classification Pipeline</h4>
-            <p>Multi-tier fallback classification that discovers repository documentation and classifies it into review gates using cascading deterministic-to-probabilistic methods with human-in-the-loop confirmation. The core of the two-minute setup.</p>
-          </div>
-        </div>
-
-        <div class="patent-item">
-          <span class="patent-id">MR-3</span>
-          <div class="patent-info">
-            <h4>Probabilistic Boundary Identification with Deterministic Content Extraction</h4>
-            <p>The document decomposer. LLM identifies section boundaries with line ranges. Code extracts content by line number. The AI identifies WHERE sections are. Code pulls the content. Extracted text is exactly what was written, never a paraphrase.</p>
-          </div>
-        </div>
-
-        <div class="patent-item">
-          <span class="patent-id">MR-4</span>
-          <div class="patent-info">
-            <h4>Two-Pass Document-Grounded Verification with Drift Detection</h4>
-            <p>Independent verification model that re-reads each finding against source documentation to kill unproven claims, with statistical tracking of removal rates per gate to detect and surface prompt drift.</p>
-          </div>
-        </div>
-
-        <div class="patent-item">
-          <span class="patent-id">MR-5</span>
-          <div class="patent-info">
-            <h4>Source-Typed Confidence Classification with Code-Enforced Restrictions</h4>
-            <p>Every finding typed as DOCUMENT_BACKED or LLM_OPINION with code-enforced type restrictions. AI opinions structurally cannot be classified as policy violations. Provenance includes specific document, section, and line range.</p>
-          </div>
-        </div>
-
-        <div class="patent-item">
-          <span class="patent-id">SYS</span>
-          <div class="patent-info">
-            <h4>Configurable Hallucination Verification Framework</h4>
-            <p>Multi-mode detection with domain-adaptive rigor for systems operating on authoritative ground truth. The foundational verification architecture that powers the entire review pipeline.</p>
-          </div>
-        </div>
-
-        <div class="patent-item">
-          <span class="patent-id">SYS</span>
-          <div class="patent-info">
-            <h4>Fail-Closed Execution Governance for Deterministic Workflows</h4>
-            <p>System architectures that prevent execution from completing unless required structural conditions are satisfied. Results are trustworthy by construction, not validated after the fact.</p>
-          </div>
-        </div>
-
-        <div class="patent-item">
-          <span class="patent-id">SYS</span>
-          <div class="patent-info">
-            <h4>Artifact-Governed Stateless Context Reconstruction</h4>
-            <p>Externalized authority for AI-assisted software modification. Stateless context rehydration that ensures reproducible, auditable modifications across sessions independent of AI memory.</p>
-          </div>
-        </div>
-
-        <div class="patent-item">
-          <span class="patent-id">SYS</span>
-          <div class="patent-info">
-            <h4>Multi-Stage Language Model Pipeline for Policy-Compliant Generation</h4>
-            <p>Cascading gate architecture ensuring AI outputs pass through multiple verification stages before reaching users, with fail-closed behavior at each stage.</p>
-          </div>
-        </div>
-      </div>
-
-      <div style="text-align: center; margin-top: 48px;" class="reveal">
-        <span class="patent-count-badge">21+</span>
-        <p style="color: var(--green-bright); font-size: 1.05rem; font-family: var(--font-mono);">provisional patents filed across AI safety, deterministic verification, and autonomous systems</p>
       </div>
     </div>
   </section>

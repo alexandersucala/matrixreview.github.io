@@ -1,0 +1,191 @@
+INTERNAL. CONFIDENTIAL.
+
+MATRIXREVIEW
+Platform Expansion Plan
+
+CodeReview AI LLC
+Alexander Sucala, Engineering / Elliott Berkson, Distribution
+March 2026
+Version 1.0
+
+================================================================================
+EXECUTIVE SUMMARY
+================================================================================
+
+MatrixReview launched as a document-grounded AI code review tool. It reads a team's documentation, reviews pull requests against that documentation, and posts findings with exact citations. Every finding passes through a two-pass hallucination verification pipeline. If it can't be proven from the team's own docs, it gets killed before reaching the PR.
+
+This is a strong entry point. It gets us in the door at engineering teams who are tired of AI tools that hallucinate. But document-grounded review by itself is a feature, not a platform. GitHub Copilot could ship 70% of this capability within a year. Our competitive position depends on expanding beyond doc review into a full platform that no single competitor can replicate.
+
+This document outlines the four-tier expansion from feature to platform, the engineering requirements for each tier, the competitive moat at each stage, and the timeline.
+
+================================================================================
+THE STRATEGIC PROBLEM
+================================================================================
+
+The AI code review market is crowded: CodeRabbit, GitHub Copilot Review, Greptile, BugBot, Qodo, Ellipsis. All of them generate findings based on general training data. None of them can tell you which of their findings are backed by your team's actual documentation and which are opinions.
+
+That distinction is what MatrixReview was built around. Our patents protect the architecture that makes it possible: source-typed confidence classification with code-enforced type restriction, cascading document discovery, probabilistic boundary identification with deterministic extraction, and multi-dimensional quality assessment with worst-case aggregation.
+
+But the risk is clear. If we stay as a doc review feature, a well-resourced competitor (Microsoft, GitHub, Google) can build an 80% solution and bundle it into their existing platform for free. We need to expand into a platform where doc review is the foundation, not the ceiling.
+
+================================================================================
+THE MOAT: TRUST ARCHITECTURE
+================================================================================
+
+The moat is not doc review. The moat is the trust architecture that sits underneath everything we build.
+
+Every other tool in this space has the same fundamental problem: you don't know why they flagged something. You get a comment, it looks plausible, maybe it's right, maybe it's hallucinated. There is no provenance, no chain of evidence, no structural guarantee separating fact from opinion.
+
+MatrixReview's patents protect the following architectural innovations:
+
+  - Source-typed confidence classification (MR-5): Every finding is tagged DOCUMENT_BACKED or LLM_OPINION. Code-enforced type restriction prevents AI opinions from being labeled as policy violations. This operates at the code level, outside the model's control. No amount of prompt injection can bypass it.
+
+  - Two-pass hallucination verification: A second model independently re-reads every finding against the source document. If it can't be proven from what's written, the finding is killed. The system monitors its own accuracy by tracking kill rates per gate.
+
+  - Cascading document discovery (MR-2): Multi-tier fallback classification that discovers docs and classifies them using cascading deterministic-to-probabilistic methods. The core of the two-minute zero-config setup.
+
+  - Deterministic content extraction (MR-3): LLM identifies section boundaries. Code extracts content by line number. The AI identifies WHERE sections are. Code pulls the content. Zero generation, zero paraphrasing. The extracted text is exactly what the team wrote.
+
+  - Multi-dimensional quality assessment (MR-1): Five independent gates with worst-case aggregation. A critical security failure cannot be masked by passing scores in other gates. The weakest dimension determines the overall result.
+
+This architecture applies to any domain where AI output needs to be trusted. Code review is the first application. It is not the only one.
+
+================================================================================
+PLATFORM TIERS
+================================================================================
+
+--------------------------------------------------------------------------------
+TIER 1: DOCUMENT-GROUNDED PR REVIEW (LIVE)
+--------------------------------------------------------------------------------
+
+Status:         Live. Beta testing.
+What It Does:   Reads team docs, reviews PRs against them, posts findings with
+                exact citations. Five gates (Security, Architecture, Style, Legal,
+                Onboarding). Two-pass verification. Zero config setup.
+Moat:           Patent-protected trust pipeline. Only tool that structurally
+                separates doc-backed findings from AI opinions.
+Revenue Model:  Free during beta. Future: per-seat monthly pricing.
+Engineering:    Complete. Iterating based on beta feedback.
+
+Tier 1 is the beachhead. It proves the architecture works, builds the install base, and collects the data that powers every subsequent tier. The immediate priority is beta feedback and iteration.
+
+--------------------------------------------------------------------------------
+TIER 2: INTELLIGENCE DASHBOARD
+--------------------------------------------------------------------------------
+
+Status:         Design phase. Data model ready for implementation.
+What It Does:   Stores every review result. Surfaces trends over time: gate
+                pass/fail rates, most-violated docs, architectural drift, security
+                posture by week/month. Historical PR review browser. Codebase-level
+                scoring on install.
+Moat:           Transitions MatrixReview from a bot to a platform. Engineering
+                leads check the dashboard weekly. Creates retention and switching
+                cost.
+Revenue Model:  Tiered pricing. Free tier (PR review only). Paid tier (dashboard,
+                historical data, codebase scoring).
+Engineering:    Moderate. Frontend (React or static), GitHub OAuth, storage layer
+                for review history. Railway can host.
+
+Tier 2 is what makes teams stay. After Tier 1, MatrixReview is a bot that posts comments. After Tier 2, it's a platform that engineering leads rely on for decisions. The data model should be deployed immediately so that every review result from Tier 1 beta is captured, even before the dashboard UI exists.
+
+Key deliverables: Review history storage from day one. Dashboard UI with gate trend lines, most-cited docs, contributor compliance rates. Codebase-level baseline scoring on install. GitHub OAuth for team access.
+
+--------------------------------------------------------------------------------
+TIER 3: GENERAL AI REVIEW
+--------------------------------------------------------------------------------
+
+Status:         Architecture scoped. Build after Tier 2 proves retention.
+What It Does:   Adds bug detection, performance flagging, complexity analysis,
+                test coverage gaps. Everything CodeRabbit does. But every finding
+                still passes through the trust pipeline. Still tagged. Still
+                verified. Still killed if unproven.
+Moat:           Signal to noise ratio. CodeRabbit posts 30 comments, half are
+                noise. MatrixReview posts 8, every one has provenance. Teams stop
+                ignoring the bot.
+Revenue Model:  Higher tier pricing. Enterprise features.
+Engineering:    Significant. New gate types (BUG_DETECTION, PERFORMANCE, TESTING)
+                that run against the diff without requiring docs. Verification
+                pipeline still applies.
+
+Tier 3 expands the addressable market from "teams that want doc enforcement" to "teams that want AI code review." The differentiator is not what we catch. It's that we can prove what we catch and transparently label what we can't.
+
+--------------------------------------------------------------------------------
+TIER 4: COALITION AGGREGATOR
+--------------------------------------------------------------------------------
+
+Status:         Concept validated. Build when install base supports it.
+What It Does:   Sits on top of CodeRabbit, Copilot, and any other AI reviewer.
+                Reads their PR comments, ingests findings, runs each through the
+                trust pipeline, outputs one unified review. Champion-select per
+                finding category. Trust scoring per tool over time.
+Moat:           Every competitor becomes an input. MatrixReview is not competing
+                with other tools. It's making them all better and proving it with
+                data. Strongest defensive position in the market.
+Revenue Model:  Premium enterprise tier. The aggregation layer is the
+                highest-value product.
+Engineering:    Ingestion layer (parsing PR comments from other bots). Coalition
+                logic based on proven NHC/SGI champion-select pattern. NCE-style
+                trust learning.
+
+Tier 4 is the endgame. Every finding from CodeRabbit and Copilot that MatrixReview kills in verification is proof that those tools hallucinate and we don't. Every finding that survives is attributed to the source tool but validated by our pipeline. Teams stop trusting any individual tool's output and start trusting our verification of all of them.
+
+Coalition architecture: This applies the same pattern proven in NHC (99-1 record against Stockfish through multi-engine coalition) and SGI language V2 (72.49% to 83.49% on analogies through three-space coalition with champion-select). Multiple sources, champion-select per category, NCE-style feedback learning which source is most accurate for which domain. The pattern generalizes from chess and language to code review.
+
+================================================================================
+PATENT COVERAGE BY TIER
+================================================================================
+
+Patent    Architecture                                              Tiers
+------    ------------                                              -----
+MR-1      Multi-Dimensional Quality Assessment, Worst-Case Agg.    1, 2, 3, 4
+MR-2      Automated Document Discovery, Cascading Classification   1, 2
+MR-3      Probabilistic Boundary ID, Deterministic Extraction      1, 2
+MR-5      Source-Typed Confidence, Code-Enforced Type Restriction   1, 2, 3, 4
+NEW       Multi-Source Coalition Verification, Champion-Select      4
+21+       Additional provisionals across AI safety, verification   All Tiers
+
+The Tier 4 coalition aggregator introduces a new patentable architecture: ingesting findings from multiple independent AI review tools, cross-referencing against operator documentation, applying source-typed confidence classification, and using champion-select aggregation to produce a single verified output. This should be filed as a new provisional.
+
+================================================================================
+TIMELINE
+================================================================================
+
+PHASE               ENGINEERING                          DISTRIBUTION
+-----               -----------                          ------------
+Now (March 2026)    Tier 1 live. Beta testing. Bug       Reddit, dev communities,
+                    fixes. Start storing review          direct outreach. 20-150
+                    history data.                        engineer companies in
+                                                         non-regulated industries.
+
+Q2 2026             Tier 2 dashboard. GitHub OAuth.      Convert beta users to paid.
+                    Historical review browser.           Case studies from beta.
+                    Codebase baseline scoring.           Content marketing (dev blog,
+                                                         comparison posts).
+
+Q3 2026             Tier 3 general review gates. Bug     Expand to larger teams.
+                    detection, performance, testing.     Enterprise pilots. Position
+                    Trust pipeline on all findings.      against CodeRabbit on
+                                                         signal-to-noise.
+
+Q4 2026+            Tier 4 coalition aggregator.         Platform play. "Keep your
+                    Multi-tool ingestion.                existing tools, add
+                    Champion-select. Trust scoring.      MatrixReview as the trust
+                                                         layer."
+
+================================================================================
+IMMEDIATE ACTIONS
+================================================================================
+
+1. Deploy review history storage. Every Tier 1 review result should be persisted from today. When the Tier 2 dashboard launches, we need months of historical data already captured.
+
+2. Beta outreach. Reddit, Facebook dev groups, GitHub community discussions, Discord servers. Target teams with 20-150 engineers in non-regulated industries as the beachhead.
+
+3. File coalition patent. Multi-source coalition verification with champion-select aggregation. File as provisional before any public disclosure of the Tier 4 architecture.
+
+4. Design Tier 2 data model. Schema for review results, gate statuses, finding provenance, trend computation. This should be ready before Tier 2 frontend work begins.
+
+5. Collect beta feedback aggressively. The feedback page is live. Every beta user should be prompted. False positives, missed findings, setup friction. All of it informs Tier 2 and 3 priorities.
+
+================================================================================
+
+This document is confidential to CodeReview AI LLC.

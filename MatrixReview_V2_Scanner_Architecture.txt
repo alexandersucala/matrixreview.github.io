@@ -1,0 +1,636 @@
+================================================================================
+MATRIXREVIEW V2 — DETERMINISTIC SCANNER ARCHITECTURE
+================================================================================
+INTERNAL. CONFIDENTIAL.
+CodeReview AI LLC
+March 2026
+================================================================================
+
+DESIGN PHILOSOPHY:
+  Same as SGI cells. Init, Process, Certify, Report.
+  Same as NCE. Research-backed mechanisms, each independently validated.
+  Same as AUFG. Deterministic foundation, probabilistic intelligence on top.
+  Same as NHC. Multiple methods, coalition, trust-scored output.
+
+  The deterministic scanner is Layer 0 of the V2 platform.
+  Everything else (embeddings, LLM analysis, scoring, dashboard)
+  sits on top of what this scanner produces.
+
+================================================================================
+SECTION 1: SCANNER CELL ARCHITECTURE
+================================================================================
+
+The scanner follows the SGI cell pattern:
+
+  CellScanner:
+    INIT:    Load language patterns, CWE detectors, import resolver
+    PROCESS: Scan every file, produce fingerprints
+    CERTIFY: Validate fingerprints (no empty fields, no unresolved refs)
+    REPORT:  Return scan manifest + per-file fingerprints
+
+The scanner is a single cell with internal sub-modules:
+
+  1. FileWalker        — Traverses repo tree, filters, classifies file types
+  2. StructureExtractor — Extracts imports, exports, definitions per language
+  3. ImportResolver     — Resolves import statements to actual file paths
+  4. RiskClassifier     — Detects vulnerability patterns (CWE-backed)
+  5. DependencyMapper   — Builds the file dependency graph
+  6. GateRelevanceScorer — Maps files to doc review gates
+  7. ManifestBuilder    — Assembles final output artifacts
+
+================================================================================
+SECTION 2: FILE FINGERPRINT SCHEMA
+================================================================================
+
+Every file produces one fingerprint. This is the atomic unit of the scanner.
+
+{
+  "path": "backend/services/auth_service.py",
+  "filename": "auth_service.py",
+  "language": "python",
+  "extension": ".py",
+  "size_bytes": 4521,
+  "line_count": 142,
+  "blank_line_count": 18,
+  "comment_line_count": 23,
+  "code_line_count": 101,
+
+  "file_role": "SOURCE",
+  // Enum: SOURCE, TEST, CONFIG, MIGRATION, GENERATED,
+  //       TYPE_DEFINITION, DOCUMENTATION, SCRIPT, BINARY, VENDOR
+
+  "structural": {
+    "imports": [
+      {"raw": "from db.models import User", "resolved_path": "backend/db/models.py", "resolved": true},
+      {"raw": "import hashlib", "resolved_path": null, "resolved": false, "stdlib": true},
+      {"raw": "from fastapi import HTTPException", "resolved_path": null, "resolved": false, "external": true}
+    ],
+    "definitions": {
+      "functions": ["authenticate_user", "hash_password", "verify_token", "create_session"],
+      "classes": ["AuthService"],
+      "constants": ["TOKEN_EXPIRY", "HASH_ROUNDS"]
+    },
+    "exports": ["AuthService", "authenticate_user"],
+    "entry_point": false,
+    "has_main_guard": false
+  },
+
+  "risk_profile": {
+    "overall_risk": "HIGH",
+    // Enum: CRITICAL, HIGH, MEDIUM, LOW, NEGLIGIBLE
+    "total_risk_points": 47,
+    "signals": [
+      {
+        "detector": "HARDCODED_SECRETS",
+        "cwe": "CWE-798",
+        "gate": "SECURITY",
+        "severity": "CRITICAL",
+        "points": 15,
+        "line": 34,
+        "evidence": "API_KEY = \"sk_live_...",
+        "confidence": 0.95
+      },
+      {
+        "detector": "SQL_STRING_CONCAT",
+        "cwe": "CWE-89",
+        "gate": "SECURITY",
+        "severity": "HIGH",
+        "points": 12,
+        "line": 78,
+        "evidence": "query = f\"SELECT * FROM users WHERE id = {user_id}\"",
+        "confidence": 0.90
+      },
+      {
+        "detector": "NO_INPUT_VALIDATION",
+        "cwe": "CWE-20",
+        "gate": "SECURITY",
+        "severity": "MEDIUM",
+        "points": 8,
+        "line": 45,
+        "evidence": "Function authenticate_user takes user_input without validation",
+        "confidence": 0.70
+      },
+      {
+        "detector": "HIGH_IMPORT_COUNT",
+        "cwe": null,
+        "gate": "ARCHITECTURE",
+        "severity": "LOW",
+        "points": 3,
+        "line": null,
+        "evidence": "14 imports (threshold: 10)",
+        "confidence": 1.0
+      }
+    ]
+  },
+
+  "gate_relevance": {
+    "SECURITY": 0.92,
+    "ARCHITECTURE": 0.45,
+    "STYLE": 0.20,
+    "LEGAL": 0.05,
+    "ONBOARDING": 0.10
+  },
+
+  "dependency": {
+    "imports_from": ["backend/db/models.py", "backend/core/config.py"],
+    "imported_by": ["backend/api/routes.py", "backend/github/webhook.py", "tests/test_auth.py"],
+    "import_depth": 2,
+    "fan_in": 3,
+    "fan_out": 2,
+    "is_critical_path": true
+  },
+
+  "metadata": {
+    "last_modified": "2026-03-05T14:22:00Z",
+    "git_blame_authors": ["alexander", "elliott"],
+    "change_frequency": "HIGH"
+  }
+}
+
+================================================================================
+SECTION 3: RISK CLASSIFIER — RESEARCH-BACKED DETECTORS
+================================================================================
+
+Like NCE's 9 mechanisms drawn from neuroscience, the risk classifier has
+detectors drawn from CWE vulnerability research. Each detector is:
+  - Deterministic (regex or AST pattern, no LLM)
+  - CWE-mapped (linked to the specific weakness it detects)
+  - Gate-assigned (which review gate it feeds into)
+  - Point-valued (contributes to the scoring system)
+  - Evidence-producing (captures the exact line and pattern)
+
+Starting with Python. Each detector is independently testable and validated.
+
+────────────────────────────────────────────────────────────────────────────────
+SECURITY DETECTORS (Gate: SECURITY)
+────────────────────────────────────────────────────────────────────────────────
+
+DETECTOR S1: HARDCODED_SECRETS
+  CWE: CWE-798 (Use of Hard-coded Credentials)
+  Points: 15 (CRITICAL)
+  Research: Most prevalent Python weakness per CWE studies. Easy to detect
+  statically with high confidence. Hard-coded credentials in source are the
+  #1 cause of credential leaks.
+  Patterns:
+    - Variable names matching: password, secret, api_key, token, private_key,
+      access_key, auth_token, bearer, credentials, passphrase
+    - Assigned to string literals (not env vars, not function calls)
+    - Exclude: test files, example files, documentation
+  Confidence: 0.95 (very high because the pattern is unambiguous)
+  False positive mitigation: Ignore assignments from os.environ, config
+  objects, function return values. Only flag literal string assignments.
+
+DETECTOR S2: SQL_INJECTION
+  CWE: CWE-89 (Improper Neutralization of Special Elements in SQL)
+  Points: 12 (HIGH)
+  Research: Top 3 most exploited vulnerability type. F-string and format()
+  in SQL queries are the primary Python vector.
+  Patterns:
+    - f-string containing SQL keywords: SELECT, INSERT, UPDATE, DELETE, DROP
+    - .format() on strings containing SQL keywords
+    - String concatenation (+) with SQL keywords and variables
+    - % formatting with SQL keywords
+  Confidence: 0.90
+  False positive mitigation: Ignore parameterized queries (?, %s placeholders
+  in the query string with separate params argument).
+
+DETECTOR S3: COMMAND_INJECTION
+  CWE: CWE-78 (Improper Neutralization of Special Elements in OS Command)
+  Points: 12 (HIGH)
+  Research: Python's subprocess and os.system are primary vectors.
+  Patterns:
+    - os.system() with variable interpolation
+    - subprocess.call/run/Popen with shell=True and variable args
+    - eval() with external input
+    - exec() with external input
+  Confidence: 0.85
+  False positive mitigation: subprocess with shell=False and list args is safe.
+
+DETECTOR S4: PATH_TRAVERSAL
+  CWE: CWE-22 (Improper Limitation of a Pathname)
+  Points: 10 (HIGH)
+  Research: Common in web applications that serve files.
+  Patterns:
+    - open() with user-supplied path without sanitization
+    - os.path.join() with user input without checking for ".."
+    - send_file / send_from_directory with user-supplied filename
+  Confidence: 0.75 (higher false positive rate, needs context)
+
+DETECTOR S5: INSECURE_CRYPTO
+  CWE: CWE-327 (Use of Broken Crypto Algorithm)
+  Points: 8 (MEDIUM)
+  Research: MD5 and SHA1 for security purposes are broken.
+  Patterns:
+    - hashlib.md5() (except when explicitly for checksums, not auth)
+    - hashlib.sha1() for password or token hashing
+    - DES, RC4, ECB mode usage
+    - random.random() used for security tokens (not cryptographically secure)
+  Confidence: 0.85
+
+DETECTOR S6: INSECURE_DESERIALIZATION
+  CWE: CWE-502 (Deserialization of Untrusted Data)
+  Points: 12 (HIGH)
+  Research: pickle.loads on untrusted data allows arbitrary code execution.
+  Patterns:
+    - pickle.loads() / pickle.load() on network/user input
+    - yaml.load() without Loader=SafeLoader
+    - marshal.loads()
+  Confidence: 0.90
+
+DETECTOR S7: HARDCODED_URLS
+  CWE: CWE-798 (variant)
+  Points: 5 (MEDIUM)
+  Research: Hardcoded HTTP URLs (not HTTPS) indicate insecure communication.
+  Internal staging URLs leaked in production code.
+  Patterns:
+    - http:// URLs in source code (not test, not localhost)
+    - Staging/dev URLs in non-test files
+  Confidence: 0.70
+
+DETECTOR S8: MISSING_ERROR_HANDLING
+  CWE: CWE-755 (Improper Handling of Exceptional Conditions)
+  Points: 6 (MEDIUM)
+  Research: Bare except clauses and broad exception catching mask errors.
+  Patterns:
+    - except: (bare except)
+    - except Exception: (overly broad) without logging
+    - No try/except around network calls, file I/O, database operations
+  Confidence: 0.65 (context-dependent, higher false positive rate)
+
+DETECTOR S9: SENSITIVE_DATA_EXPOSURE
+  CWE: CWE-200 (Exposure of Sensitive Information)
+  Points: 8 (MEDIUM)
+  Research: Logging or printing sensitive data.
+  Patterns:
+    - print() or logging.* containing variables named password, token, secret
+    - Exception messages that include full stack traces with user data
+    - Debug endpoints that expose internal state
+  Confidence: 0.70
+
+DETECTOR S10: UNSAFE_REGEX
+  CWE: CWE-1333 (Inefficient Regular Expression Complexity)
+  Points: 4 (LOW)
+  Research: ReDoS attacks via catastrophic backtracking.
+  Patterns:
+    - Nested quantifiers: (a+)+, (a*)*
+    - Alternation with overlap: (a|a)+
+    - re.compile() on user-supplied patterns without timeout
+  Confidence: 0.80
+
+────────────────────────────────────────────────────────────────────────────────
+ARCHITECTURE DETECTORS (Gate: ARCHITECTURE)
+────────────────────────────────────────────────────────────────────────────────
+
+DETECTOR A1: HIGH_COUPLING
+  CWE: N/A (architectural quality)
+  Points: 3 per excess import above threshold
+  Research: High fan-out (many imports) correlates with fragile modules.
+  Metric: Import count > configurable threshold (default: 10 for Python)
+  Confidence: 1.0 (deterministic count)
+
+DETECTOR A2: CIRCULAR_DEPENDENCY
+  CWE: N/A (architectural quality)
+  Points: 8 per cycle
+  Research: Circular imports cause runtime errors and indicate poor separation.
+  Detection: Build import graph, detect cycles using DFS.
+  Confidence: 1.0 (deterministic graph analysis)
+
+DETECTOR A3: GOD_FILE
+  CWE: N/A (architectural quality)
+  Points: 5
+  Research: Files exceeding a size threshold indicate poor decomposition.
+  Metric: Code lines > configurable threshold (default: 500)
+  Confidence: 1.0 (deterministic count)
+
+DETECTOR A4: DEEP_NESTING
+  CWE: CWE-1075 (Unconditional Control Flow Transfer)
+  Points: 4 per instance
+  Research: Deeply nested code (>4 levels) is error-prone and hard to review.
+  Detection: Count indentation levels. Flag functions with max depth > 4.
+  Confidence: 0.90
+
+DETECTOR A5: MISSING_TYPE_HINTS
+  CWE: N/A (code quality)
+  Points: 1 per untyped public function
+  Research: Python type hints improve maintainability and catch errors.
+  Detection: Parse function signatures for missing type annotations.
+  Confidence: 1.0 (deterministic parse)
+
+DETECTOR A6: CRITICAL_DEPENDENCY
+  CWE: N/A (architectural risk)
+  Points: 5
+  Research: Files imported by many others are critical paths. Changes to
+  them have outsized impact.
+  Metric: Fan-in > configurable threshold (default: 10)
+  Confidence: 1.0 (deterministic graph analysis)
+
+────────────────────────────────────────────────────────────────────────────────
+STYLE DETECTORS (Gate: STYLE)
+────────────────────────────────────────────────────────────────────────────────
+
+DETECTOR ST1: INCONSISTENT_NAMING
+  CWE: N/A (code quality)
+  Points: 1 per inconsistency
+  Research: Mixed naming conventions within a file indicate poor discipline.
+  Detection: Check if file mixes snake_case and camelCase for functions/vars.
+  Confidence: 0.85
+
+DETECTOR ST2: MISSING_DOCSTRINGS
+  CWE: N/A (code quality)
+  Points: 1 per public function/class without docstring
+  Detection: Parse function/class definitions, check for docstring.
+  Confidence: 1.0 (deterministic parse)
+
+DETECTOR ST3: LONG_FUNCTIONS
+  CWE: N/A (code quality)
+  Points: 2 per function
+  Research: Functions > 50 lines are harder to understand and test.
+  Detection: Count lines between def and next def/class/EOF.
+  Confidence: 1.0 (deterministic count)
+
+DETECTOR ST4: DEAD_CODE
+  CWE: CWE-561 (Dead Code)
+  Points: 2 per instance
+  Research: Unreachable code indicates logic errors or abandoned features.
+  Detection: Detect code after return/raise/break/continue statements.
+  Confidence: 0.80
+
+────────────────────────────────────────────────────────────────────────────────
+LEGAL DETECTORS (Gate: LEGAL)
+────────────────────────────────────────────────────────────────────────────────
+
+DETECTOR L1: MISSING_LICENSE_HEADER
+  CWE: N/A (compliance)
+  Points: 2 per file
+  Research: Missing license headers in source files create IP ambiguity.
+  Detection: Check first 10 lines for license/copyright patterns.
+  Confidence: 0.90
+
+DETECTOR L2: EXTERNAL_DEPENDENCY_LICENSE
+  CWE: N/A (compliance)
+  Points: 3 per risky dependency
+  Research: GPL/AGPL dependencies in commercial code create legal risk.
+  Detection: Parse requirements.txt / setup.py, cross-reference known
+  license database (can use a static lookup table of common packages).
+  Confidence: 0.75 (depends on lookup table completeness)
+
+────────────────────────────────────────────────────────────────────────────────
+ONBOARDING DETECTORS (Gate: ONBOARDING)
+────────────────────────────────────────────────────────────────────────────────
+
+DETECTOR O1: MISSING_README
+  CWE: N/A (process)
+  Points: 5
+  Detection: Check for README.md in repo root and key directories.
+  Confidence: 1.0
+
+DETECTOR O2: MISSING_CONTRIBUTING
+  CWE: N/A (process)
+  Points: 3
+  Detection: Check for CONTRIBUTING.md in repo root.
+  Confidence: 1.0
+
+DETECTOR O3: NO_TEST_DIRECTORY
+  CWE: N/A (process)
+  Points: 4
+  Detection: Check for tests/ or test/ directory.
+  Confidence: 1.0
+
+================================================================================
+SECTION 4: POINT SYSTEM AND SCORING
+================================================================================
+
+POINT VALUES BY SEVERITY:
+  CRITICAL: 15 points
+  HIGH:     10-12 points
+  MEDIUM:   5-8 points
+  LOW:      2-4 points
+  INFO:     1 point
+
+SCORE FORMULA:
+  raw_points = sum of all risk signal points across all files
+  normalized_points = raw_points / sqrt(code_line_count)
+    (sqrt normalization so large codebases aren't penalized linearly)
+  score = max(0, 10 - (normalized_points / scale_factor))
+    where scale_factor is calibrated so that:
+      0-2 points normalized = 10/10 (pristine)
+      3-5 points normalized = 8-9/10 (healthy)
+      6-10 points normalized = 6-7/10 (needs attention)
+      11-20 points normalized = 4-5/10 (significant issues)
+      21-40 points normalized = 2-3/10 (critical state)
+      40+ points normalized = 0-1/10 (emergency)
+
+PER-GATE SCORES:
+  Each gate gets its own score using the same formula but only
+  counting points from that gate's detectors.
+
+OVERALL SCORE:
+  Weighted average with worst-case drag:
+    overall = weighted_avg(gate_scores) - penalty(worst_gate)
+    where penalty = max(0, (5 - worst_gate_score) * 0.5)
+  This means a 2/10 security score drags the overall down
+  even if all other gates are 9/10. Same principle as MR-1
+  worst-case aggregation.
+
+PR SCORE EVOLUTION:
+  When a PR is reviewed:
+    new_findings_points = sum of new finding points
+    fixed_findings_points = sum of previously flagged issues now resolved
+    delta = new_findings_points - fixed_findings_points
+    new_score = recalculate(previous_raw_points + delta)
+
+  Each PR stores its delta. The dashboard shows:
+    "PR #142 by [author]: +14 points (security +12, architecture +2)"
+    "PR #145 by [author]: -10 points (fixed security issue)"
+
+================================================================================
+SECTION 5: SCAN MANIFEST SCHEMA
+================================================================================
+
+The scanner produces one manifest per scan:
+
+{
+  "scan_id": "abc123",
+  "repo": "owner/repo",
+  "branch": "main",
+  "scan_type": "FULL",
+  "started_at": "2026-03-06T10:00:00Z",
+  "completed_at": "2026-03-06T10:00:03Z",
+  "scan_time_ms": 3200,
+
+  "summary": {
+    "total_files": 342,
+    "scanned_files": 298,
+    "skipped_files": 44,
+    "languages": {"python": 210, "javascript": 52, "markdown": 36},
+    "total_code_lines": 45200,
+    "total_risk_points": 187,
+    "overall_score": 6.3,
+    "gate_scores": {
+      "SECURITY": 5.1,
+      "ARCHITECTURE": 7.2,
+      "STYLE": 8.0,
+      "LEGAL": 7.5,
+      "ONBOARDING": 9.0
+    },
+    "risk_distribution": {
+      "CRITICAL": 3,
+      "HIGH": 12,
+      "MEDIUM": 28,
+      "LOW": 45,
+      "NEGLIGIBLE": 210
+    }
+  },
+
+  "dependency_graph": {
+    "nodes": 298,
+    "edges": 1247,
+    "cycles": 2,
+    "critical_path_files": [
+      "backend/db/models.py",
+      "backend/core/dependencies.py",
+      "backend/services/auth_service.py"
+    ],
+    "orphan_files": ["scripts/old_migration.py"]
+  },
+
+  "top_findings": [
+    // Top 20 highest-point findings across all files
+  ],
+
+  "recommendations": [
+    {
+      "priority": 1,
+      "gate": "SECURITY",
+      "action": "Remove hardcoded API key in backend/services/auth_service.py line 34",
+      "points_recovered": 15,
+      "new_score_if_fixed": 6.8
+    }
+  ],
+
+  "file_fingerprints": [
+    // Array of all file fingerprints (or reference to separate files)
+  ]
+}
+
+================================================================================
+SECTION 6: IMPORT RESOLVER (PYTHON)
+================================================================================
+
+Full import resolution for Python. Deterministic. No LLM.
+
+RESOLUTION ORDER (mirrors Python's actual import machinery):
+  1. Check if import is stdlib (use a static list of stdlib modules)
+  2. Check if import is a known third-party package (from requirements.txt)
+  3. Resolve relative imports using file position in package hierarchy
+  4. Resolve absolute imports by:
+     a. Search from project root
+     b. Follow __init__.py chains
+     c. Handle "from X import Y" by resolving X to a file, then Y to
+        a name within that file
+  5. If all else fails, mark as "unresolved" with the raw import string
+
+OUTPUTS PER IMPORT:
+  - raw: the original import statement
+  - resolved_path: the file it points to (or null)
+  - resolved: boolean
+  - stdlib: boolean
+  - external: boolean (third-party package)
+  - names: list of specific names imported
+
+STDLIB LIST:
+  Maintain a static set of Python 3.10+ stdlib module names.
+  ~300 modules. Updated per Python version.
+
+THIRD-PARTY DETECTION:
+  Parse requirements.txt, setup.py, setup.cfg, pyproject.toml for
+  declared dependencies. Any import matching a declared dependency
+  is marked external.
+
+================================================================================
+SECTION 7: BUILD PLAN
+================================================================================
+
+Each sub-module is built, tested, and certified independently.
+Same embryonic development approach as SGI cells.
+
+STEP 1: FileWalker
+  - Input: repo root path
+  - Output: list of file paths with metadata (size, extension, role)
+  - Test: run against C:\CodeReview, verify correct file discovery
+  - Certify: every file in the repo is accounted for (included or skipped)
+
+STEP 2: StructureExtractor (Python)
+  - Input: single Python file contents
+  - Output: imports, definitions, exports
+  - Test: run against known Python files, verify extraction accuracy
+  - Certify: compare against manual inspection of 10 files
+
+STEP 3: ImportResolver (Python)
+  - Input: list of imports + project file tree
+  - Output: resolved paths for each import
+  - Test: run against C:\CodeReview, verify resolution accuracy
+  - Certify: spot-check 20 imports manually
+
+STEP 4: RiskClassifier
+  - Input: single file contents + structural extraction
+  - Output: risk signals with CWE mappings and points
+  - Test: create test files with known vulnerabilities, verify detection
+  - Certify: zero false negatives on test suite, <10% false positive rate
+
+STEP 5: DependencyMapper
+  - Input: all resolved imports across all files
+  - Output: adjacency list, cycle detection, fan-in/fan-out per file
+  - Test: run against C:\CodeReview, verify graph accuracy
+  - Certify: manual verification of critical path identification
+
+STEP 6: GateRelevanceScorer
+  - Input: file path, structural extraction, risk signals
+  - Output: per-gate relevance scores (0-1)
+  - Test: verify auth files score high on SECURITY, test files on ONBOARDING
+  - Certify: compare against manual classification of 20 files
+
+STEP 7: ManifestBuilder
+  - Input: all fingerprints + dependency graph + scores
+  - Output: scan_manifest.json
+  - Test: full end-to-end scan of C:\CodeReview
+  - Certify: manifest is valid, complete, and matches manual spot checks
+
+STEP 8: Integration
+  - Wire all modules together
+  - Run full scan against 3 test repos (C:\CodeReview, cal.com, stripe)
+  - Performance target: <5 seconds for 500 files, <30 seconds for 5000 files
+
+================================================================================
+SECTION 8: FUTURE EXPANSION
+================================================================================
+
+LANGUAGE EXPANSION:
+  Each new language requires:
+    1. Language-specific regex patterns for StructureExtractor
+    2. Language-specific import resolution rules
+    3. Language-specific risk patterns (some CWEs are language-specific)
+  Everything else (FileWalker, DependencyMapper, ManifestBuilder,
+  scoring) is language-agnostic.
+
+  Priority order: Python (first), JavaScript/TypeScript, Go, Java, Rust
+
+EMBEDDING LAYER:
+  After the scanner is certified, the fingerprints feed into an
+  embedding layer that vectorizes the structural map into hyperspace.
+  Files become vectors. Proximity encodes structural relationships.
+  Claude can query the hyperspace for related code without reading
+  every file. This is the bridge between the deterministic layer
+  and the LLM intelligence layer.
+
+COALITION INTEGRATION:
+  The scanner output feeds into the coalition aggregator. When
+  CodeRabbit or Copilot flags a file, the scanner's risk profile
+  for that file provides context: "CodeRabbit flagged auth_service.py.
+  Our scanner already identified CWE-798 and CWE-89 in that file.
+  CodeRabbit's finding aligns with our deterministic detection.
+  Trust score for this finding: HIGH."
+
+================================================================================
+END OF ARCHITECTURE DOCUMENT
+================================================================================
