@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support | MatrixReview</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-black: #050505;
+      --green-bright: #00ff41;
+      --green-mid: #00cc33;
+      --green-dim: #00aa2a;
+      --green-glow: rgba(0, 255, 65, 0.08);
+      --green-glow-strong: rgba(0, 255, 65, 0.15);
+      --text-primary: #e0e0e0;
+      --text-muted: #888;
+      --border-green: rgba(0, 255, 65, 0.12);
+      --border-green-hover: rgba(0, 255, 65, 0.3);
+      --bg-card: #0a0a0a;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Share Tech Mono', 'Fira Code', monospace;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-black);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    #matrix-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      opacity: 0.225;
+    }
+
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(5, 5, 5, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-green);
+      padding: 16px 0;
+    }
+
+    .topnav .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topnav-logo {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      color: var(--green-bright);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+    }
+
+    .topnav-links { display: flex; gap: 28px; align-items: center; }
+    .topnav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .topnav-links a:hover { color: var(--green-bright); }
+
+    .topnav-cta {
+      background: var(--green-bright) !important;
+      color: #000 !important;
+      font-weight: 600 !important;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 0.85rem !important;
+      transition: box-shadow 0.3s, transform 0.2s;
+    }
+    .topnav-cta:hover {
+      box-shadow: 0 0 24px var(--green-glow-strong);
+      transform: translateY(-1px);
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .page-content {
+      position: relative;
+      z-index: 1;
+      padding: 80px 0 120px;
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--green-mid);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .page-subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: 48px;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      margin-top: 48px;
+      color: var(--green-bright);
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+    }
+
+    .support-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-green);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .support-card:hover {
+      border-color: var(--border-green-hover);
+    }
+
+    .support-card h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .support-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .support-card a {
+      color: var(--green-bright);
+      text-decoration: none;
+    }
+    .support-card a:hover {
+      text-decoration: underline;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border-green);
+      margin: 48px 0;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--green-mid);
+      letter-spacing: 0.05em;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--bg-card);
+      border: 1px solid var(--border-green);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--green-bright);
+      box-shadow: 0 0 12px var(--green-glow);
+    }
+
+    .form-group textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .form-group select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300cc33' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+
+    .form-group select option {
+      background: #0a0a0a;
+      color: var(--text-primary);
+    }
+
+    .btn-submit {
+      display: inline-block;
+      background: var(--green-bright);
+      color: #000;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 16px 40px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      letter-spacing: 0.02em;
+      transition: box-shadow 0.3s, transform 0.2s;
+    }
+
+    .btn-submit:hover {
+      box-shadow: 0 0 24px var(--green-glow-strong);
+      transform: translateY(-2px);
+    }
+
+    .privacy-note {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 12px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-green);
+      padding: 40px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--green-bright); }
+
+    .beta-banner {
+      background: #fff;
+      color: #000;
+      text-align: center;
+      padding: 10px 0;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1001;
+    }
+
+    @media (max-width: 600px) {
+      .topnav-links { gap: 16px; }
+      .btn-submit { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="matrix-bg"></canvas>
+
+<div class="beta-banner">In Beta Testing Now</div>
+
+<nav class="topnav">
+  <div class="container" style="max-width: 1100px;">
+    <a href="index.html" class="topnav-logo">MatrixReview</a>
+    <div class="topnav-links">
+      <a href="index.html">Home</a>
+      <a href="feedback.html">Beta Feedback</a>
+      <a href="https://github.com/apps/matrixreview" class="topnav-cta">Install Free</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-content">
+  <div class="container">
+    <p class="section-eyebrow">// Support</p>
+    <h1>How can we help?</h1>
+    <p class="page-subtitle">
+      Report incorrect findings, get help with setup, or reach out about anything else. We read every message.
+    </p>
+
+    <div class="support-card">
+      <h3>Email us directly</h3>
+      <p>For any questions, issues, or general support: <a href="mailto:admin@matrixreview.io">admin@matrixreview.io</a></p>
+    </div>
+
+    <div class="support-card">
+      <h3>Beta feedback</h3>
+      <p>Want to share detailed feedback on your beta experience? Use our <a href="feedback.html">beta feedback form</a>.</p>
+    </div>
+
+    <div class="support-card">
+      <h3>Installation help</h3>
+      <p>MatrixReview installs as a GitHub App. Visit <a href="https://github.com/apps/matrixreview">github.com/apps/matrixreview</a> and click Install. Select your repo and open a PR. Setup takes under 2 minutes. If you run into issues, email us.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2 id="report">Report an incorrect finding</h2>
+    <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem;">
+      If MatrixReview posted a finding that is wrong, misleading, or not relevant, let us know. This helps us improve the system for everyone.
+    </p>
+
+    <div id="reportForm">
+      <div class="form-group">
+        <label>Your name or GitHub handle</label>
+        <input type="text" id="rname" placeholder="e.g. @yourhandle">
+      </div>
+
+      <div class="form-group">
+        <label>Repository</label>
+        <input type="text" id="rrepo" placeholder="e.g. myorg/myrepo">
+      </div>
+
+      <div class="form-group">
+        <label>PR number</label>
+        <input type="text" id="rpr" placeholder="e.g. 142">
+      </div>
+
+      <div class="form-group">
+        <label>What type of issue?</label>
+        <select id="rtype">
+          <option value="">Select one</option>
+          <option value="false-positive">False positive. The finding is wrong.</option>
+          <option value="wrong-citation">Wrong citation. The doc reference is incorrect.</option>
+          <option value="duplicate">Duplicate. This was already flagged by another gate.</option>
+          <option value="irrelevant">Irrelevant. The finding doesn't apply to this PR.</option>
+          <option value="missing">Missing. A real issue was not caught.</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Describe the issue</label>
+        <textarea id="rdesc" placeholder="Which finding is wrong and why? Be as specific as you can. Include the finding text if possible."></textarea>
+      </div>
+
+      <button class="btn-submit" onclick="submitReport()">Submit Report</button>
+      <p class="privacy-note">Reports are sent directly to admin@matrixreview.io. Nothing is stored on this page or shared publicly.</p>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <span class="footer-copy">&copy; 2026 MatrixReview LLC. All rights reserved.</span>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="mailto:admin@matrixreview.io">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Matrix rain
+const c = document.getElementById('matrix-bg');
+const ctx = c.getContext('2d');
+function resizeCanvas() { c.width = window.innerWidth; c.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ<>/{}[];=';
+const fontSize = 14;
+let columns, drops;
+function initDrops() {
+  columns = Math.floor(c.width / fontSize);
+  drops = Array.from({length: columns}, () => Math.random() * -100);
+}
+initDrops();
+window.addEventListener('resize', initDrops);
+function draw() {
+  ctx.fillStyle = 'rgba(5, 5, 5, 0.08)';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#00ff41';
+  ctx.font = fontSize + 'px monospace';
+  for (let i = 0; i < drops.length; i++) {
+    const text = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+    if (drops[i] * fontSize > c.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  }
+}
+setInterval(draw, 45);
+
+// Check URL params for pre-filled report
+const params = new URLSearchParams(window.location.search);
+if (params.get('type') === 'incorrect-finding') {
+  document.getElementById('report').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Report submission
+function submitReport() {
+  const name = document.getElementById('rname').value.trim();
+  const repo = document.getElementById('rrepo').value.trim();
+  const pr = document.getElementById('rpr').value.trim();
+  const type = document.getElementById('rtype').value;
+  const desc = document.getElementById('rdesc').value.trim();
+
+  if (!name) { alert('Please enter your name or GitHub handle.'); return; }
+  if (!desc) { alert('Please describe the issue.'); return; }
+
+  const subject = encodeURIComponent('Incorrect Finding Report from ' + name);
+  const body = encodeURIComponent(
+    'MATRIXREVIEW INCORRECT FINDING REPORT\n' +
+    '=====================================\n\n' +
+    'Reporter: ' + name + '\n' +
+    'Repository: ' + (repo || 'Not provided') + '\n' +
+    'PR Number: ' + (pr || 'Not provided') + '\n' +
+    'Issue Type: ' + (type || 'Not selected') + '\n\n' +
+    'DESCRIPTION:\n' + desc + '\n'
+  );
+
+  window.location.href = 'mailto:admin@matrixreview.io?subject=' + subject + '&body=' + body;
+}
+</script>
+
+</body>
+</html>
