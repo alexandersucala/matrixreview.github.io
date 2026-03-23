@@ -703,7 +703,231 @@
     </div>
   </section>
 
-  <!-- ═══════════════ WHAT IS MATRIXREVIEW ═══════════════ -->
+  <!-- ═══════════════ LIVE DEMO ANIMATION ═══════════════ -->
+  <section id="demo" style="padding: 40px 0 80px;">
+    <div class="container">
+      <div class="reveal" style="text-align: center; margin-bottom: 32px;">
+        <p class="section-eyebrow">// See it in action</p>
+      </div>
+      <div class="demo-wrapper reveal">
+        <div class="demo-terminal" id="demoTerminal">
+          <!-- Phase 1: Setup terminal -->
+          <div class="demo-phase" id="phase-setup">
+            <div class="term-header">
+              <span class="term-dot" style="background:#ff5f57;"></span>
+              <span class="term-dot" style="background:#febc2e;"></span>
+              <span class="term-dot" style="background:#28c840;"></span>
+              <span class="term-title">MatrixReview Setup</span>
+            </div>
+            <div class="term-body" id="setupLines"></div>
+          </div>
+          <!-- Phase 2: Review output -->
+          <div class="demo-phase" id="phase-review" style="display:none;">
+            <div class="term-header">
+              <span class="term-dot" style="background:#ff5f57;"></span>
+              <span class="term-dot" style="background:#febc2e;"></span>
+              <span class="term-dot" style="background:#28c840;"></span>
+              <span class="term-title">PR #847 Review Result</span>
+            </div>
+            <div class="term-body" id="reviewOutput"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .demo-wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .demo-terminal {
+      background: #0c0c0c;
+      border: 1px solid var(--border-green);
+      border-radius: 10px;
+      overflow: hidden;
+      min-height: 420px;
+    }
+    .term-header {
+      background: #1a1a1a;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .term-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .term-title {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #666;
+      margin-left: 8px;
+    }
+    .term-body {
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.9;
+      min-height: 380px;
+    }
+    .term-line {
+      opacity: 0;
+      animation: termFadeIn 0.3s ease forwards;
+    }
+    @keyframes termFadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .t-green { color: #00ff41; }
+    .t-dim { color: #555; }
+    .t-white { color: #e0e0e0; }
+    .t-yellow { color: #febc2e; }
+    .t-red { color: #ff5f57; }
+    .t-blue { color: #5ba0d0; }
+    .t-check { color: #28c840; }
+    .t-bold { font-weight: 700; }
+
+    .review-header {
+      font-size: 1rem;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0,255,65,0.1);
+    }
+    .review-gate {
+      margin-bottom: 14px;
+    }
+    .review-gate-title {
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .review-finding {
+      font-size: 0.78rem;
+      padding-left: 16px;
+      margin-bottom: 4px;
+      line-height: 1.7;
+      color: #bbb;
+    }
+    .review-citation {
+      font-size: 0.72rem;
+      padding-left: 28px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+    .review-clean {
+      font-size: 0.78rem;
+      padding-left: 16px;
+      color: #555;
+    }
+    .review-legend {
+      font-size: 0.72rem;
+      color: #555;
+      margin-top: 16px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0,255,65,0.1);
+    }
+  </style>
+
+  <script>
+  (function() {
+    var setupData = [
+      { text: '<span class="t-check">&#10003;</span> <span class="t-white">Connecting to GitHub for owner/webapp...</span>', delay: 400 },
+      { text: '<span class="t-check">&#10003;</span> <span class="t-white">Scanning repository...</span>', delay: 600 },
+      { text: '<span class="t-check">&#10003;</span> <span class="t-green">Mapped 7,549 source files with 11,830 dependencies, found 322 docs in 10,148 repo files</span>', delay: 1200 },
+      { text: '<span class="t-check">&#10003;</span> <span class="t-white">Classifying 322 files in parallel...</span>', delay: 800 },
+      { text: '<span class="t-check">&#10003;</span> <span class="t-dim">Classified 50/322</span>', delay: 300 },
+      { text: '<span class="t-check">&#10003;</span> <span class="t-dim">Classified 150/322</span>', delay: 300 },
+      { text: '<span class="t-check">&#10003;</span> <span class="t-dim">Classified 275/322</span>', delay: 300 },
+      { text: '<span class="t-check">&#10003;</span> <span class="t-green">Classified 322/322</span> <span class="t-dim">18.6s</span>', delay: 500 },
+      { text: '<span class="t-check">&#10003;</span> <span class="t-white">Decomposing multi-topic files...</span>', delay: 600 },
+      { text: '<span class="t-check">&#10003;</span> <span class="t-green">521 documents ingested</span>', delay: 500 },
+      { text: '<span class="t-dim">   62 Security &middot; 248 Architecture &middot; 178 Onboarding &middot; 31 Style &middot; 2 Legal</span>', delay: 400 },
+      { text: '', delay: 200 },
+      { text: '<span class="t-green t-bold">Setup complete.</span> <span class="t-dim">Total: 47.2s</span>', delay: 800 },
+    ];
+
+    var reviewHTML = ''
+      + '<div class="review-header"><span class="t-red">&#9679;</span> <span class="t-white t-bold">MatrixReview &#8212; RED</span></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-red">&#9679;</span> <span class="t-white">SECURITY</span></div>'
+      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[SECURITY]</span> Hardcoded admin API key exposed in client-side JavaScript. Violates secret management policy.</div>'
+      + '<div class="review-citation"><span class="t-dim">Also flagged by: ARCHITECTURE, STYLE</span> &middot; <span class="t-blue">AGENTS_security.md lines 18-19</span> &middot; <span class="t-dim">index.js line 10</span></div>'
+      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[SECURITY]</span> Data exfiltration to external domain. Sends user data to analytics-collector.sketchy-domain.io without authorization.</div>'
+      + '<div class="review-citation"><span class="t-blue">AGENTS_security.md lines 16-18</span> &middot; <span class="t-dim">index.js line 25</span></div>'
+      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[SECURITY]</span> TLS certificate validation disabled globally via NODE_TLS_REJECT_UNAUTHORIZED=0.</div>'
+      + '<div class="review-citation"><span class="t-blue">SECURITY.md lines 19-19</span> &middot; <span class="t-dim">index.js line 47</span></div>'
+      + '</div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-yellow">&#9679;</span> <span class="t-white">ARCHITECTURE</span></div>'
+      + '<div class="review-finding"><span class="t-yellow">&#128173;</span> <span class="t-white">[ARCHITECTURE]</span> Fetch override in API proxy violates separation of concerns. Telemetry should use dedicated middleware.</div>'
+      + '<div class="review-citation"><span class="t-blue">architecture-vertical-slices.md lines 45-62</span> &middot; <span class="t-dim">index.js line 38</span></div>'
+      + '</div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-check">&#9679;</span> <span class="t-white">LEGAL</span></div>'
+      + '<div class="review-clean">&#10003; No issues found</div></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-check">&#9679;</span> <span class="t-white">STYLE</span></div>'
+      + '<div class="review-clean">&#10003; No issues found</div></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-yellow">&#9679;</span> <span class="t-white">ONBOARDING</span></div>'
+      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[CHORE]</span> PR template not filled out. Placeholder text and unchecked mandatory items.</div>'
+      + '<div class="review-citation"><span class="t-blue">CONTRIBUTING.md lines 77-80</span></div>'
+      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[POLICY_VIOLATION]</span> Self-reported: "I have not read the contributing guide."</div>'
+      + '<div class="review-citation"><span class="t-blue">CONTRIBUTING.md lines 58-65</span></div>'
+      + '</div>'
+      + '<div class="review-legend"><span class="t-green">&#128270;</span> = doc-backed &middot; <span class="t-yellow">&#128173;</span> = AI suggestion &middot; <span class="t-blue">&#9670;</span> = doc citation</div>';
+
+    var setupEl = document.getElementById('setupLines');
+    var reviewEl = document.getElementById('reviewOutput');
+    var phaseSetup = document.getElementById('phase-setup');
+    var phaseReview = document.getElementById('phase-review');
+
+    function runSetup(cb) {
+      setupEl.innerHTML = '';
+      phaseSetup.style.display = 'block';
+      phaseReview.style.display = 'none';
+      var i = 0;
+      function next() {
+        if (i >= setupData.length) { setTimeout(cb, 1500); return; }
+        var line = document.createElement('div');
+        line.className = 'term-line';
+        line.innerHTML = setupData[i].text;
+        line.style.animationDelay = '0s';
+        setupEl.appendChild(line);
+        setupEl.scrollTop = setupEl.scrollHeight;
+        i++;
+        setTimeout(next, setupData[i-1].delay);
+      }
+      next();
+    }
+
+    function showReview(cb) {
+      phaseSetup.style.display = 'none';
+      phaseReview.style.display = 'block';
+      reviewEl.innerHTML = '';
+      reviewEl.style.opacity = '0';
+      reviewEl.innerHTML = reviewHTML;
+      reviewEl.style.transition = 'opacity 0.6s ease';
+      setTimeout(function() { reviewEl.style.opacity = '1'; }, 50);
+      setTimeout(cb, 8000);
+    }
+
+    function loop() {
+      runSetup(function() {
+        showReview(function() {
+          setTimeout(loop, 1000);
+        });
+      });
+    }
+
+    var demoObs = new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting) {
+        demoObs.disconnect();
+        setTimeout(loop, 500);
+      }
+    }, { threshold: 0.3 });
+    demoObs.observe(document.getElementById('demoTerminal'));
+  })();
+  </script>
   <section id="what">
     <div class="container">
       <div class="reveal">
