@@ -851,28 +851,37 @@
       { text: '<span class="t-green t-bold">Setup complete.</span> <span class="t-dim">Total: 47.2s</span>', delay: 800 },
     ];
 
-    var reviewHTML = ''
+    // ── Collapsed review (phase 2: what you see first) ──
+    var collapsedHTML = ''
       + '<div class="review-header"><span class="t-red">&#9679;</span> <span class="t-white t-bold">MatrixReview &#8212; RED</span></div>'
       + '<div style="font-size:0.72rem;color:#555;margin-bottom:14px;">&#9881;&#65039; = code-backed &middot; &#128270; = doc-backed &middot; &#128173; = AI suggestion</div>'
       + '<div style="font-size:0.78rem;color:#bbb;margin-bottom:4px;"><span class="t-white t-bold">Risk:</span> 44 files directly affected | 12 broken importers</div>'
       + '<div style="font-size:0.78rem;color:#bbb;margin-bottom:16px;"><span class="t-white t-bold">Findings:</span> 16 (13 code-backed, 7 doc-backed, 2 AI suggestions)</div>'
-      + '<div class="review-gate"><div class="review-gate-title"><span class="t-red">&#9679;</span> <span class="t-white">SECURITY</span> <span class="t-dim">&#8212; 3 findings (2 code-backed, 1 doc-backed) &middot; expand &#8595;</span></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-red">&#9679;</span> <span class="t-white">SECURITY</span> <span class="t-dim">&#8212; 3 findings (2 code-backed, 1 doc-backed) &middot; expand &#128317;</span></div></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-red">&#9679;</span> <span class="t-white">ARCHITECTURE</span> <span class="t-dim">&#8212; 5 findings (4 code-backed, 1 doc-backed) &middot; expand &#128317;</span></div></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-check">&#9679;</span> <span class="t-white">LEGAL</span> <span class="t-dim">&#8212; No issues found</span></div></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-check">&#9679;</span> <span class="t-white">STYLE</span> <span class="t-dim">&#8212; No issues found</span></div></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-yellow">&#9679;</span> <span class="t-white">ONBOARDING</span> <span class="t-dim">&#8212; 2 findings (2 AI) &middot; expand &#128317;</span></div></div>'
+      + '<div class="review-legend"><span class="t-dim">&#9757; Click expand on any gate to see full findings with evidence and citations.</span></div>';
+
+    // ── Expanded review (phase 3: security gate opened) ──
+    var expandedHTML = ''
+      + '<div class="review-header"><span class="t-red">&#9679;</span> <span class="t-white t-bold">MatrixReview &#8212; RED</span></div>'
+      + '<div style="font-size:0.72rem;color:#555;margin-bottom:14px;">&#9881;&#65039; = code-backed &middot; &#128270; = doc-backed &middot; &#128173; = AI suggestion</div>'
+      + '<div style="font-size:0.78rem;color:#bbb;margin-bottom:4px;"><span class="t-white t-bold">Risk:</span> 44 files directly affected | 12 broken importers</div>'
+      + '<div style="font-size:0.78rem;color:#bbb;margin-bottom:16px;"><span class="t-white t-bold">Findings:</span> 16 (13 code-backed, 7 doc-backed, 2 AI suggestions)</div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-red">&#9679;</span> <span class="t-white">SECURITY</span> <span class="t-dim">&#8212; 3 findings (2 code-backed, 1 doc-backed) &middot; collapse &#128316;</span></div>'
       + '<div class="review-finding"><span class="t-green">&#9881;&#65039;</span> <span class="t-red t-bold">CRITICAL</span>: 8 files with <span class="t-white">auth, crypto, data</span> access depend on modified <span class="t-blue">constants.ts</span></div>'
-      + '<div class="review-finding"><span class="t-green">&#9881;&#65039;</span> <span class="t-red t-bold">CRITICAL</span>: Hardcoded secret in <span class="t-blue">constants.ts</span>. Must use env vars.</div>'
+      + '<div class="review-citation"><span class="t-dim">Show affected files</span></div>'
+      + '<div class="review-finding"><span class="t-green">&#9881;&#65039;</span> <span class="t-red t-bold">CRITICAL</span>: Hardcoded secret in <span class="t-blue">constants.ts</span>: <span class="t-dim">API_KEY = "c...t4s"</span>. Must use env vars.</div>'
+      + '<div class="review-citation"><span class="t-dim">Show evidence</span></div>'
       + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[SECURITY]</span> Hardcoded API key violates secret management policy.</div>'
       + '<div class="review-citation"><span class="t-dim">Also flagged by: ARCHITECTURE, STYLE</span> &middot; <span class="t-blue">AGENTS_security.md lines 18-19</span></div>'
       + '</div>'
-      + '<div class="review-gate"><div class="review-gate-title"><span class="t-red">&#9679;</span> <span class="t-white">ARCHITECTURE</span> <span class="t-dim">&#8212; 5 findings (4 code-backed, 1 doc-backed) &middot; expand &#8595;</span></div>'
-      + '<div class="review-finding"><span class="t-green">&#9881;&#65039;</span> <span class="t-white t-bold">HIGH</span>: 4 files with <span class="t-white">data, input</span> access depend on modified <span class="t-blue">constants.ts</span></div>'
-      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[ARCHITECTURE]</span> Removed exports break downstream dependencies.</div>'
-      + '<div class="review-citation"><span class="t-blue">api-no-breaking-changes.md lines 1-30</span></div>'
-      + '</div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-red">&#9679;</span> <span class="t-white">ARCHITECTURE</span> <span class="t-dim">&#8212; 5 findings (4 code-backed, 1 doc-backed) &middot; expand &#128317;</span></div></div>'
       + '<div class="review-gate"><div class="review-gate-title"><span class="t-check">&#9679;</span> <span class="t-white">LEGAL</span> <span class="t-dim">&#8212; No issues found</span></div></div>'
       + '<div class="review-gate"><div class="review-gate-title"><span class="t-check">&#9679;</span> <span class="t-white">STYLE</span> <span class="t-dim">&#8212; No issues found</span></div></div>'
-      + '<div class="review-gate"><div class="review-gate-title"><span class="t-yellow">&#9679;</span> <span class="t-white">ONBOARDING</span> <span class="t-dim">&#8212; 2 findings (2 AI) &middot; expand &#8595;</span></div>'
-      + '<div class="review-finding"><span class="t-yellow">&#128173;</span> <span class="t-white">[CHORE]</span> PR template not filled out. Placeholder text remaining.</div>'
-      + '<div class="review-citation"><span class="t-blue">CONTRIBUTING.md lines 77-80</span></div>'
-      + '</div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-yellow">&#9679;</span> <span class="t-white">ONBOARDING</span> <span class="t-dim">&#8212; 2 findings (2 AI) &middot; expand &#128317;</span></div></div>'
       + '<div class="review-legend"><span class="t-dim">&#9757; Click expand on any gate to see full findings with evidence and citations.</span></div>';
 
     var setupEl = document.getElementById('setupLines');
@@ -899,21 +908,33 @@
       next();
     }
 
-    function showReview(cb) {
+    function showCollapsed(cb) {
       phaseSetup.style.display = 'none';
       phaseReview.style.display = 'block';
       reviewEl.innerHTML = '';
       reviewEl.style.opacity = '0';
-      reviewEl.innerHTML = reviewHTML;
+      reviewEl.innerHTML = collapsedHTML;
       reviewEl.style.transition = 'opacity 0.6s ease';
       setTimeout(function() { reviewEl.style.opacity = '1'; }, 50);
-      setTimeout(cb, 8000);
+      setTimeout(cb, 3500);
+    }
+
+    function showExpanded(cb) {
+      reviewEl.style.transition = 'opacity 0.3s ease';
+      reviewEl.style.opacity = '0';
+      setTimeout(function() {
+        reviewEl.innerHTML = expandedHTML;
+        reviewEl.style.opacity = '1';
+      }, 350);
+      setTimeout(cb, 6000);
     }
 
     function loop() {
       runSetup(function() {
-        showReview(function() {
-          setTimeout(loop, 1000);
+        showCollapsed(function() {
+          showExpanded(function() {
+            setTimeout(loop, 1500);
+          });
         });
       });
     }
