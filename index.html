@@ -693,8 +693,8 @@
       <h1>The Code Review<br><span class="green">Revolution</span> Is Here.</h1>
       <p class="hero-sub">
         AI code review that reads your documentation and understands your codebase.
-        Graph-based dependency intelligence. Three-pass verification. Cited findings.
-        Your rules enforced on every pull request.
+        Code-backed findings from static analysis. Doc-backed findings from your policies.
+        Every finding cited or killed. Your rules enforced on every pull request.
       </p>
       <div class="hero-buttons">
         <a href="https://github.com/apps/matrixreview" class="btn-primary">Install on GitHub. Free.</a>
@@ -853,29 +853,27 @@
 
     var reviewHTML = ''
       + '<div class="review-header"><span class="t-red">&#9679;</span> <span class="t-white t-bold">MatrixReview &#8212; RED</span></div>'
-      + '<div class="review-gate"><div class="review-gate-title"><span class="t-red">&#9679;</span> <span class="t-white">SECURITY</span></div>'
-      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[SECURITY]</span> Hardcoded admin API key exposed in client-side JavaScript. Violates secret management policy.</div>'
-      + '<div class="review-citation"><span class="t-dim">Also flagged by: ARCHITECTURE, STYLE</span> &middot; <span class="t-blue">AGENTS_security.md lines 18-19</span> &middot; <span class="t-dim">index.js line 10</span></div>'
-      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[SECURITY]</span> Data exfiltration to external domain. Sends user data to analytics-collector.sketchy-domain.io without authorization.</div>'
-      + '<div class="review-citation"><span class="t-blue">AGENTS_security.md lines 16-18</span> &middot; <span class="t-dim">index.js line 25</span></div>'
-      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[SECURITY]</span> TLS certificate validation disabled globally via NODE_TLS_REJECT_UNAUTHORIZED=0.</div>'
-      + '<div class="review-citation"><span class="t-blue">SECURITY.md lines 19-19</span> &middot; <span class="t-dim">index.js line 47</span></div>'
+      + '<div style="font-size:0.72rem;color:#555;margin-bottom:14px;">&#9881;&#65039; = code-backed &middot; &#128270; = doc-backed &middot; &#128173; = AI suggestion</div>'
+      + '<div style="font-size:0.78rem;color:#bbb;margin-bottom:4px;"><span class="t-white t-bold">Risk:</span> 44 files directly affected | 12 broken importers</div>'
+      + '<div style="font-size:0.78rem;color:#bbb;margin-bottom:16px;"><span class="t-white t-bold">Findings:</span> 16 (13 code-backed, 7 doc-backed, 2 AI suggestions)</div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-red">&#9679;</span> <span class="t-white">SECURITY</span> <span class="t-dim">&#8212; 3 findings (2 code-backed, 1 doc-backed) &middot; expand &#8595;</span></div>'
+      + '<div class="review-finding"><span class="t-green">&#9881;&#65039;</span> <span class="t-red t-bold">CRITICAL</span>: 8 files with <span class="t-white">auth, crypto, data</span> access depend on modified <span class="t-blue">constants.ts</span></div>'
+      + '<div class="review-finding"><span class="t-green">&#9881;&#65039;</span> <span class="t-red t-bold">CRITICAL</span>: Hardcoded secret in <span class="t-blue">constants.ts</span>. Must use env vars.</div>'
+      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[SECURITY]</span> Hardcoded API key violates secret management policy.</div>'
+      + '<div class="review-citation"><span class="t-dim">Also flagged by: ARCHITECTURE, STYLE</span> &middot; <span class="t-blue">AGENTS_security.md lines 18-19</span></div>'
       + '</div>'
-      + '<div class="review-gate"><div class="review-gate-title"><span class="t-yellow">&#9679;</span> <span class="t-white">ARCHITECTURE</span></div>'
-      + '<div class="review-finding"><span class="t-yellow">&#128173;</span> <span class="t-white">[ARCHITECTURE]</span> Fetch override in API proxy violates separation of concerns. Telemetry should use dedicated middleware.</div>'
-      + '<div class="review-citation"><span class="t-blue">architecture-vertical-slices.md lines 45-62</span> &middot; <span class="t-dim">index.js line 38</span></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-red">&#9679;</span> <span class="t-white">ARCHITECTURE</span> <span class="t-dim">&#8212; 5 findings (4 code-backed, 1 doc-backed) &middot; expand &#8595;</span></div>'
+      + '<div class="review-finding"><span class="t-green">&#9881;&#65039;</span> <span class="t-white t-bold">HIGH</span>: 4 files with <span class="t-white">data, input</span> access depend on modified <span class="t-blue">constants.ts</span></div>'
+      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[ARCHITECTURE]</span> Removed exports break downstream dependencies.</div>'
+      + '<div class="review-citation"><span class="t-blue">api-no-breaking-changes.md lines 1-30</span></div>'
       + '</div>'
-      + '<div class="review-gate"><div class="review-gate-title"><span class="t-check">&#9679;</span> <span class="t-white">LEGAL</span></div>'
-      + '<div class="review-clean">&#10003; No issues found</div></div>'
-      + '<div class="review-gate"><div class="review-gate-title"><span class="t-check">&#9679;</span> <span class="t-white">STYLE</span></div>'
-      + '<div class="review-clean">&#10003; No issues found</div></div>'
-      + '<div class="review-gate"><div class="review-gate-title"><span class="t-yellow">&#9679;</span> <span class="t-white">ONBOARDING</span></div>'
-      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[CHORE]</span> PR template not filled out. Placeholder text and unchecked mandatory items.</div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-check">&#9679;</span> <span class="t-white">LEGAL</span> <span class="t-dim">&#8212; No issues found</span></div></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-check">&#9679;</span> <span class="t-white">STYLE</span> <span class="t-dim">&#8212; No issues found</span></div></div>'
+      + '<div class="review-gate"><div class="review-gate-title"><span class="t-yellow">&#9679;</span> <span class="t-white">ONBOARDING</span> <span class="t-dim">&#8212; 2 findings (2 AI) &middot; expand &#8595;</span></div>'
+      + '<div class="review-finding"><span class="t-yellow">&#128173;</span> <span class="t-white">[CHORE]</span> PR template not filled out. Placeholder text remaining.</div>'
       + '<div class="review-citation"><span class="t-blue">CONTRIBUTING.md lines 77-80</span></div>'
-      + '<div class="review-finding"><span class="t-green">&#128270;</span> <span class="t-white">[POLICY_VIOLATION]</span> Self-reported: "I have not read the contributing guide."</div>'
-      + '<div class="review-citation"><span class="t-blue">CONTRIBUTING.md lines 58-65</span></div>'
       + '</div>'
-      + '<div class="review-legend"><span class="t-green">&#128270;</span> = doc-backed &middot; <span class="t-yellow">&#128173;</span> = AI suggestion &middot; <span class="t-blue">&#9670;</span> = doc citation</div>';
+      + '<div class="review-legend"><span class="t-dim">&#9757; Click expand on any gate to see full findings with evidence and citations.</span></div>';
 
     var setupEl = document.getElementById('setupLines');
     var reviewEl = document.getElementById('reviewOutput');
@@ -945,20 +943,20 @@
         <div class="intro-text">
           <p>
             Generic AI code review tools give opinions based on general best practices.
-            MatrixReview gives <strong>document-backed findings</strong>. Every flag references
-            your company's own documentation, not someone else's standards.
+            MatrixReview gives <strong>cited findings</strong>. Every flag references
+            your company's own documentation or is proven directly from your code structure.
           </p>
           <p>
-            On setup, MatrixReview clones your repo, builds a <strong>full import dependency graph</strong>
-            (nodes, edges, entry points), and discovers all your documentation in one pass. When a PR arrives,
-            it computes the <strong>blast radius</strong> of your changes, identifies every upstream and
-            downstream file affected, and pulls only the relevant docs for review. No context flooding. Focused analysis.
+            On setup, MatrixReview clones your repo, builds a <strong>full dependency map</strong>
+            of your source files, and discovers all your documentation in one pass. When a PR arrives,
+            it identifies every file <strong>directly affected</strong> by your changes and
+            pulls only the relevant docs for review. No context flooding. Focused analysis.
           </p>
           <p>
-            Findings are tagged <strong>DOC-BACKED</strong> or <strong>AI SUGGESTION</strong>
-            so your team knows exactly what's policy and what's observation. Doc-backed findings
-            cite the specific document name and line range. If it can't be proven from your docs,
-            it doesn't get posted.
+            Findings come in three tiers: <strong>⚙️ CODE-BACKED</strong> (proven from your code structure),
+            <strong>🔎 DOC-BACKED</strong> (cited from your documentation), and
+            <strong>💭 AI SUGGESTION</strong> (model observation, not proven).
+            If a finding can't be proven from your code or docs, it gets killed before reaching your PR.
           </p>
         </div>
 
@@ -969,28 +967,28 @@
             <span class="step-text">GitHub PR opened or updated. Triggers review.</span>
           </div>
           <div class="pipeline-step">
-            <span class="step-marker">GRAPH</span>
-            <span class="step-text">Clone repo, build dependency graph, discover docs in one pass</span>
+            <span class="step-marker">SCAN</span>
+            <span class="step-text">Maps your codebase, discovers docs, classifies into 5 gates</span>
           </div>
           <div class="pipeline-step">
-            <span class="step-marker">CLASSIFY</span>
-            <span class="step-text">Parallel classification into 5 gates with topic tagging</span>
+            <span class="step-marker">CODE</span>
+            <span class="step-text">Static code analysis finds structural issues deterministically</span>
           </div>
           <div class="pipeline-step">
-            <span class="step-marker">PASS 1</span>
-            <span class="step-text">Five parallel gate reviews with blast radius context</span>
+            <span class="step-marker">DOCS</span>
+            <span class="step-text">Reviews PR against your documentation with focused context</span>
           </div>
           <div class="pipeline-step">
-            <span class="step-marker">PASS 2</span>
-            <span class="step-text">Hallucination guard. Kills unproven findings.</span>
+            <span class="step-marker">VERIFY</span>
+            <span class="step-text">Verification pipeline kills unproven findings</span>
           </div>
           <div class="pipeline-step">
-            <span class="step-marker">PASS 3</span>
-            <span class="step-text">Citation sweep. Matches every finding to exact doc lines.</span>
+            <span class="step-marker">CITE</span>
+            <span class="step-text">Matches every surviving finding to exact doc lines</span>
           </div>
           <div class="pipeline-step">
             <span class="step-marker">OUTPUT</span>
-            <span class="step-text">Traffic light with cited, deduped findings</span>
+            <span class="step-text">Traffic light with cited, deduped, expandable findings</span>
           </div>
         </div>
       </div>
@@ -1044,9 +1042,9 @@
         <div class="feature-card feature-card-wide">
           <div>
             <span class="feature-icon">SYSTEM:VERIFICATION</span>
-            <h3>Three-Pass Verification Pipeline</h3>
-            <p>Every finding goes through a three-pass pipeline before it reaches the PR. Pass 1 generates findings by reviewing the diff against your documentation with blast radius context. Pass 2 is a separate verification model that re-reads each finding against the source document and kills anything unproven. Pass 3 is a dedicated citation sweep that searches your docs for the exact filename and line range supporting each finding.</p>
-            <p style="margin-top: 12px;">If a finding can't survive all three passes, it never reaches your PR comment. The system monitors its own accuracy and flags gates with high removal rates for prompt tuning.</p>
+            <h3>Multi-Pass Verification Pipeline</h3>
+            <p>Every finding goes through a verification pipeline before it reaches your PR. Findings are generated, then independently verified against your source documentation. Anything that contradicts or can't be proven from your docs gets killed. A dedicated citation step then matches every surviving finding to the exact filename and line range in your documentation.</p>
+            <p style="margin-top: 12px;">If a finding can't survive verification, it never reaches your PR comment. The result: zero hallucinations shipped. Code-backed findings from static analysis skip verification entirely because they are deterministic.</p>
           </div>
           <div>
             <span class="feature-icon">SYSTEM:FRESHNESS</span>
@@ -1080,8 +1078,8 @@
           <span class="diff-vs">vs. tools that require hours of setup and config files</span>
         </div>
         <div class="diff-card">
-          <h3>Transparent Finding Types</h3>
-          <p>Every finding is clearly tagged DOC-BACKED or AI SUGGESTION. Your team always knows what's policy enforcement and what's the model's opinion.</p>
+          <h3>Three-Tier Confidence</h3>
+          <p>Every finding is tagged ⚙️ CODE-BACKED (proven from your code structure), 🔎 DOC-BACKED (cited from your documentation), or 💭 AI SUGGESTION. Your team always knows what's deterministic, what's policy, and what's the model's opinion.</p>
           <span class="diff-vs">vs. tools that blend opinions with rules into a single output</span>
         </div>
       </div>
@@ -1107,10 +1105,10 @@
             INSTALLATION &<br>DISCOVERY
           </div>
           <div class="deepdive-text">
-            <h3>Install once. Graph builds itself.</h3>
-            <p>When you install MatrixReview on a repository, the system clones your repo, walks the entire filesystem, and builds a full import dependency graph. Nodes are your files, edges are your imports, and entry points are identified automatically. On cal.com (25,000+ files), this completes in under 60 seconds.</p>
-            <p>During the same walk, MatrixReview discovers all your documentation files and classifies them into review gates using parallel LLM analysis. 300+ docs classified in about 13 seconds. Multi-topic docs (like a CONTRIBUTING.md with security rules and style guides in one file) are decomposed into gate-specific sections with exact line ranges.</p>
-            <p>No configuration files. No YAML. No rule authoring. Install the GitHub App, open a PR, and setup runs automatically on the first trigger. Under 2 minutes for a 25,000 file repo.</p>
+            <h3>Install once. Setup runs itself.</h3>
+            <p>When you install MatrixReview on a repository, the system scans your entire codebase and builds a dependency map of every source file. It identifies entry points, security-sensitive modules, and the relationships between files. This is how code-backed findings work: structural issues are detected directly from your code, not guessed by an AI.</p>
+            <p>During the same scan, MatrixReview discovers all your documentation files and classifies them into review categories automatically. Multi-topic docs are decomposed into category-specific sections. No configuration files. No YAML. No rule authoring.</p>
+            <p>Install the GitHub App, confirm the scan results, and you're live. Under 2 minutes for a 25,000 file repo.</p>
           </div>
         </div>
 
@@ -1120,9 +1118,9 @@
             DOCUMENT<br>DECOMPOSITION
           </div>
           <div class="deepdive-text">
-            <h3>One doc, multiple gates. Handled surgically.</h3>
-            <p>Real-world documentation doesn't follow neat categories. A CONTRIBUTING.md might contain security policies, style rules, and PR process requirements all in one file. The decomposer handles this.</p>
-            <p>Step 1: LLM identifies distinct topical sections with line ranges. Step 2: Content is extracted using those line ranges. Deterministic extraction, not LLM regeneration. The AI identifies where sections are; code pulls the content by line number. This means the extracted text is exactly what was written, never a paraphrase or hallucination.</p>
+            <h3>One doc, multiple categories. Handled automatically.</h3>
+            <p>Real-world documentation doesn't follow neat categories. A CONTRIBUTING.md might contain security policies, style rules, and PR process requirements all in one file. MatrixReview handles this automatically.</p>
+            <p>Multi-topic documents are decomposed into category-specific sections with exact line ranges. The content extracted is exactly what was written, never paraphrased or regenerated. Each section is assigned to the right review gate and used as the source of truth for that category.</p>
           </div>
         </div>
 
@@ -1132,10 +1130,10 @@
             THE REVIEW<br>PIPELINE
           </div>
           <div class="deepdive-text">
-            <h3>Five gates, three passes, zero hallucinations shipped.</h3>
-            <p>When a PR arrives, MatrixReview loads the dependency graph and computes the blast radius: every file changed plus every upstream and downstream import affected. It then pulls only the documentation relevant to those files and their gates. Not 300 docs. 10 to 20 focused, relevant docs.</p>
-            <p>Pass 1 runs five parallel gate reviews, each with lane-disciplined prompts (Security only sees security issues, Architecture only sees architecture issues). Pass 2 is a separate verification model that re-reads each finding against the source docs and kills anything that contradicts or can't be proven. Pass 3 is a citation sweep that searches the docs for exact line references for every surviving finding.</p>
-            <p>Cross-gate dedup consolidates duplicates by priority (Security > Architecture > Legal > Style > Onboarding). The output is a traffic light: RED, YELLOW, or GREEN. Every finding shows the source document, line range, and whether it's doc-backed or an AI suggestion.</p>
+            <h3>Two engines, one review. Zero hallucinations shipped.</h3>
+            <p>When a PR arrives, MatrixReview runs two independent analysis engines. The code engine performs deterministic static analysis: hardcoded secrets, broken imports, security boundary crossings, circular dependencies, and entry point modifications. These findings are proven directly from your code structure with zero AI involvement.</p>
+            <p>The doc engine reviews the PR against your team's documentation across five specialized gates, each scoped to its own domain. A verification pipeline then kills any finding that can't be proven from your docs, and a citation step matches survivors to exact filenames and line ranges.</p>
+            <p>The two engines merge into a single review with three confidence tiers: code-backed, doc-backed, and AI suggestion. Cross-gate dedup consolidates duplicates. The output is a compact, expandable PR comment with a traffic light summary.</p>
           </div>
         </div>
 
@@ -1146,8 +1144,8 @@
           </div>
           <div class="deepdive-text">
             <h3>Every decision path has a fallback.</h3>
-            <p>MatrixReview is built on a fail-closed architecture. If the system can't prove a finding from your documentation, the finding doesn't ship. If GitHub is unreachable, the review degrades gracefully and posts an error comment rather than failing silently. If a document can't be fetched during freshness check, the review runs with cached docs. Stale docs are better than no review.</p>
-            <p>Structured logging with JSON output and request IDs runs through the entire pipeline. Every scan, classification, decomposition, review, and verification step is traceable. When something goes wrong, you can follow the exact path of execution. When something goes right, you can prove it.</p>
+            <p>MatrixReview is built on a fail-closed architecture. If the system can't prove a finding from your documentation or code, the finding doesn't ship. If GitHub is unreachable, the review degrades gracefully and posts an error comment rather than failing silently. If a document can't be fetched during freshness check, the review runs with cached docs. Stale docs are better than no review.</p>
+            <p>If the code analysis engine fails, the doc engine still runs and produces a complete review. If the doc engine fails, the code engine findings still post. Multiple fallbacks at every layer. The review always fires.</p>
           </div>
         </div>
 
@@ -1157,10 +1155,10 @@
             WHAT'S<br>COMING
           </div>
           <div class="deepdive-text">
-            <h3>V2: Codebase intelligence platform.</h3>
-            <p>Tier 1 is everything above. Document-grounded PR review with five gates, three-pass verification, dependency graph intelligence, and blast radius analysis. Free during beta.</p>
-            <p>Tier 2 adds a full codebase intelligence UI. Explore your dependency graph visually. Click into nodes, trace imports, see which files are most connected. Track every engineer's PR history, codebase health scores over time, and gate compliance trends. Are your security practices improving? Is architectural drift creeping in? Tier 1 tells you what's wrong with this PR. Tier 2 tells you what's happening to your codebase.</p>
-            <p>Tier 3 adds AI code generation that reads your docs, your code, and your diff, then writes the compliant fix itself. Instead of telling you what's wrong, it writes the code that's right.</p>
+            <h3>What's next: intelligence and auto-fix.</h3>
+            <p>Everything above is live now. Code-backed and doc-backed PR review with five gates, verification pipeline, dependency analysis, and expandable findings. Free during beta.</p>
+            <p>Next: a full codebase intelligence dashboard. Explore your dependency map visually. Track every engineer's PR history, codebase health scores over time, and gate compliance trends. Are your security practices improving? Is architectural drift creeping in? The PR review tells you what's wrong with this PR. The dashboard tells you what's happening to your codebase.</p>
+            <p>After that: AI-generated fix suggestions. When MatrixReview finds a violation, it reads your docs, your code, and your diff, then writes the compliant fix itself. Instead of telling you what's wrong, it writes the code that's right. One click to apply.</p>
           </div>
         </div>
       </div>
