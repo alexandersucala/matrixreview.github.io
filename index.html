@@ -679,9 +679,10 @@
       <div class="topnav-links">
         <a href="#what">Product</a>
         <a href="#features">Features</a>
+        <a href="#fix-demo">Fix Generation</a>
         <a href="#how-it-works">How It Works</a>
         <a href="support.html">Support</a>
-        <a href="https://github.com/apps/matrixreview" class="topnav-cta">Install Free →</a>
+        <a href="https://github.com/apps/matrixreview" class="topnav-cta">Install Free &rarr;</a>
       </div>
     </div>
   </nav>
@@ -694,7 +695,7 @@
       <p class="hero-sub">
         AI code review that reads your documentation and understands your codebase.
         Code-backed findings from static analysis. Doc-backed findings from your policies.
-        Every finding cited or killed. Your rules enforced on every pull request.
+        One-click fixes verified against your own standards. Every finding cited or killed.
       </p>
       <div class="hero-buttons">
         <a href="https://github.com/apps/matrixreview" class="btn-primary">Install on GitHub. Free.</a>
@@ -1220,18 +1221,185 @@
         <div class="deepdive-block reveal">
           <div class="deepdive-label">
             <span class="num">05</span>
-            WHAT'S<br>COMING
+            FIX GENERATION<br>&amp; DASHBOARD
           </div>
           <div class="deepdive-text">
-            <h3>What's next: intelligence and auto-fix.</h3>
-            <p>Everything above is live now. Code-backed and doc-backed PR review with five gates, verification pipeline, dependency analysis, and expandable findings. Free during beta.</p>
-            <p>Next: a full codebase intelligence dashboard. Explore your dependency map visually. Track every engineer's PR history, codebase health scores over time, and gate compliance trends. Are your security practices improving? Is architectural drift creeping in? The PR review tells you what's wrong with this PR. The dashboard tells you what's happening to your codebase.</p>
-            <p>After that: AI-generated fix suggestions. When MatrixReview finds a violation, it reads your docs, your code, and your diff, then writes the compliant fix itself. Instead of telling you what's wrong, it writes the code that's right. One click to apply.</p>
+            <h3>Generate fixes. Verify them. Ship with confidence.</h3>
+            <p>When MatrixReview flags a finding, engineers click "Generate Fix" from the PR comment. The system runs a pre-flight intent check first. If the finding is fixable, a fix is generated with full context: the diff, your documentation, and the import graph. The fix then runs back through the entire review pipeline. If it would trigger new findings or violate your policies, it gets rejected before posting. Self-proving verification.</p>
+            <p>If the finding needs a design decision instead of a code change, the system explains why and suggests next steps. If the PR intent itself violates policy, fix generation is blocked entirely. The system will not generate code that circumvents your security rules.</p>
+            <p>Coming next: a full codebase intelligence dashboard. Explore your dependency map visually. Track PR history by engineer. View codebase health scores and gate compliance trends. The PR review tells you what's wrong with this PR. The dashboard tells you what's happening to your codebase.</p>
           </div>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- ═══════════════ FIX GENERATION DEMO ═══════════════ -->
+  <section id="fix-demo" style="padding: 100px 0;">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-eyebrow">// Fix Generation</p>
+        <h2 class="section-title">One-click fixes.<br>Verified before they ship.</h2>
+        <p class="section-subtitle">
+          When MatrixReview flags a finding, engineers click "Generate Fix" directly from the PR comment.
+          Every fix runs back through the full review pipeline before posting.
+          If the fix would violate your policies, it gets rejected.
+        </p>
+      </div>
+
+      <div class="demo-tabs reveal" style="display:flex;gap:8px;margin:40px 0 24px;justify-content:center;">
+        <button class="demo-tab active" data-demo="success" style="background:rgba(0,255,65,0.08);border:1px solid var(--green-bright);color:var(--green-bright);padding:10px 24px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;">Fix Generated</button>
+        <button class="demo-tab" data-demo="redirect" style="background:transparent;border:1px solid var(--border-green);color:var(--text-muted);padding:10px 24px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;">Needs Discussion</button>
+        <button class="demo-tab" data-demo="reject" style="background:transparent;border:1px solid var(--border-green);color:var(--text-muted);padding:10px 24px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;">Architecture Violation</button>
+      </div>
+
+      <div class="reveal" style="max-width:800px;margin:0 auto;">
+
+        <!-- SUCCESS -->
+        <div class="demo-scenario active" id="demo-success">
+          <div style="background:var(--bg-card);border:1px solid var(--border-green);border-radius:6px;padding:24px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <span style="font-size:18px;">&#128270;</span>
+              <span style="font-family:var(--font-mono);font-size:0.75rem;padding:3px 10px;border-radius:3px;background:rgba(59,130,246,0.15);color:#60a5fa;">DOC-BACKED</span>
+              <span style="font-family:var(--font-mono);font-size:0.7rem;padding:2px 8px;border-radius:3px;background:rgba(255,136,0,0.15);color:#ff8800;font-weight:700;">HIGH</span>
+            </div>
+            <p style="font-size:0.95rem;line-height:1.6;color:var(--text-primary);margin-bottom:12px;">
+              Your SECURITY.md (lines 14-22) requires all API endpoints to validate authentication tokens.
+              This PR adds a new endpoint <code style="background:rgba(0,255,65,0.08);padding:2px 6px;border-radius:3px;font-family:var(--font-mono);font-size:0.85rem;color:var(--green-dim);">/api/users/export</code> without auth middleware.
+            </p>
+            <div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);padding:8px 12px;border-left:2px solid var(--green-dark);margin-bottom:16px;">
+              SECURITY.md lines 14-22: "All public-facing API routes MUST include the authMiddleware wrapper."
+            </div>
+            <button onclick="showFixResult('success')" style="background:transparent;border:1px solid var(--green-bright);color:var(--green-bright);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;">&#9881; Generate Fix</button>
+          </div>
+          <div id="fix-result-success" style="display:none;">
+            <div style="margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-left:2px solid var(--green-bright);margin-bottom:4px;color:var(--green-dim);font-size:0.9rem;"><span style="color:var(--green-bright);font-weight:700;">&#10003;</span> Pre-flight: FIXABLE. Clear code-level fix available.</div>
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-left:2px solid var(--green-bright);margin-bottom:4px;color:var(--green-dim);font-size:0.9rem;"><span style="color:var(--green-bright);font-weight:700;">&#10003;</span> Fix generated using Claude Sonnet with full context.</div>
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-left:2px solid var(--green-bright);margin-bottom:4px;color:var(--green-dim);font-size:0.9rem;"><span style="color:var(--green-bright);font-weight:700;">&#10003;</span> Verification: Fix passed all 5 gates. No new findings.</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border-green);border-radius:6px;overflow:hidden;margin-bottom:16px;">
+              <div style="background:rgba(0,255,65,0.06);padding:8px 16px;font-family:var(--font-mono);font-size:0.8rem;color:var(--green-dim);border-bottom:1px solid var(--border-green);">Generated Fix (verified)</div>
+              <pre style="margin:0;padding:16px;font-family:var(--font-mono);font-size:0.82rem;line-height:1.5;overflow-x:auto;color:var(--text-primary);"><code>// routes/users/export.ts
+import { authMiddleware } from '@/middleware/auth';
+import { rateLimiter } from '@/middleware/rateLimit';
+
+- export async function GET(req: Request) {
++ export async function GET(req: Request) {
++   // Auth required per SECURITY.md lines 14-22
++   await authMiddleware(req);
++   await rateLimiter(req, { window: '1m', max: 10 });
++
+    const users = await db.users.findMany();
+    return Response.json(users);
+  }</code></pre>
+            </div>
+            <div style="padding:12px 16px;border-radius:4px;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(0,255,65,0.08);color:var(--green-bright);border:1px solid var(--green-dark);">
+              &#10003; Fix verified. Passed Security, Architecture, Style, Onboarding, Legal gates.
+            </div>
+          </div>
+        </div>
+
+        <!-- REDIRECT -->
+        <div class="demo-scenario" id="demo-redirect" style="display:none;">
+          <div style="background:var(--bg-card);border:1px solid var(--border-green);border-radius:6px;padding:24px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <span style="font-size:18px;">&#9881;&#65039;</span>
+              <span style="font-family:var(--font-mono);font-size:0.75rem;padding:3px 10px;border-radius:3px;background:rgba(0,255,65,0.12);color:var(--green-bright);">CODE-BACKED</span>
+              <span style="font-family:var(--font-mono);font-size:0.7rem;padding:2px 8px;border-radius:3px;background:rgba(255,136,0,0.15);color:#ff8800;font-weight:700;">HIGH</span>
+            </div>
+            <p style="font-size:0.95rem;line-height:1.6;color:var(--text-primary);margin-bottom:12px;">
+              Blast radius alert: <code style="background:rgba(0,255,65,0.08);padding:2px 6px;border-radius:3px;font-family:var(--font-mono);font-size:0.85rem;color:var(--green-dim);">packages/shared/types.ts</code> is imported by 174 files.
+              This PR changes the UserProfile interface, breaking 23 downstream consumers that depend on <code style="background:rgba(0,255,65,0.08);padding:2px 6px;border-radius:3px;font-family:var(--font-mono);font-size:0.85rem;color:var(--green-dim);">avatarUrl</code> being required.
+            </p>
+            <div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);padding:8px 12px;border-left:2px solid var(--green-dark);margin-bottom:16px;">
+              Import graph: 174 files depend on this module. 23 reference UserProfile.avatarUrl directly.
+            </div>
+            <button onclick="showFixResult('redirect')" style="background:transparent;border:1px solid var(--green-bright);color:var(--green-bright);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;">&#9881; Generate Fix</button>
+          </div>
+          <div id="fix-result-redirect" style="display:none;">
+            <div style="margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-left:2px solid #ffcc00;margin-bottom:4px;color:#ffcc00;font-size:0.9rem;"><span style="font-weight:700;">&#10003;</span> Pre-flight: REDIRECT. This requires a design decision.</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border-green);border-radius:6px;padding:20px;margin-bottom:16px;font-size:0.9rem;line-height:1.6;color:var(--text-primary);">
+              <p><strong>This finding cannot be auto-fixed.</strong></p>
+              <p style="margin-top:8px;">Changing <code style="background:rgba(0,255,65,0.08);padding:2px 6px;border-radius:3px;font-family:var(--font-mono);color:var(--green-dim);">avatarUrl</code> from required to optional affects 23 consumers across 4 packages. This is a breaking API change that requires a migration strategy.</p>
+              <p style="margin-top:8px;"><strong>Recommended next steps:</strong></p>
+              <p style="margin-top:4px;color:var(--text-muted);">1. Add avatarUrl as optional with a default fallback<br>2. Or create a V2 interface and deprecate V1 over two sprints<br>3. Discuss with the team before proceeding</p>
+            </div>
+            <div style="padding:12px 16px;border-radius:4px;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(255,204,0,0.08);color:#ffcc00;border:1px solid rgba(255,204,0,0.3);">
+              &rarr; Redirected. Design decision required. Not a code-level fix.
+            </div>
+          </div>
+        </div>
+
+        <!-- REJECT -->
+        <div class="demo-scenario" id="demo-reject" style="display:none;">
+          <div style="background:var(--bg-card);border:1px solid var(--border-green);border-radius:6px;padding:24px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <span style="font-size:18px;">&#9881;&#65039;</span>
+              <span style="font-family:var(--font-mono);font-size:0.75rem;padding:3px 10px;border-radius:3px;background:rgba(0,255,65,0.12);color:var(--green-bright);">CODE-BACKED</span>
+              <span style="font-family:var(--font-mono);font-size:0.7rem;padding:2px 8px;border-radius:3px;background:rgba(255,68,68,0.2);color:#ff4444;font-weight:700;">CRITICAL</span>
+            </div>
+            <p style="font-size:0.95rem;line-height:1.6;color:var(--text-primary);margin-bottom:12px;">
+              This PR adds an SQL statement that auto-grants admin privileges to all new user signups.
+              <code style="background:rgba(255,68,68,0.08);padding:2px 6px;border-radius:3px;font-family:var(--font-mono);font-size:0.85rem;color:#ff4444;">GRANT ALL PRIVILEGES ON *.* TO new_user</code>
+            </p>
+            <div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);padding:8px 12px;border-left:2px solid #ff4444;margin-bottom:16px;">
+              SECURITY.md lines 45-52: "Privilege escalation must require explicit admin approval. No auto-grant patterns."
+            </div>
+            <button onclick="showFixResult('reject')" style="background:transparent;border:1px solid var(--green-bright);color:var(--green-bright);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;">&#9881; Generate Fix</button>
+          </div>
+          <div id="fix-result-reject" style="display:none;">
+            <div style="margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-left:2px solid #ff4444;margin-bottom:4px;color:#ff4444;font-size:0.9rem;"><span style="font-weight:700;">&#10007;</span> Pre-flight: REJECT. The PR's intent violates security policy.</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid rgba(255,68,68,0.2);border-radius:6px;padding:20px;margin-bottom:16px;font-size:0.9rem;line-height:1.6;color:var(--text-primary);">
+              <p><strong>Fix generation blocked.</strong></p>
+              <p style="margin-top:8px;">The intent of this PR is to auto-grant admin privileges. This directly violates your security policy. Generating a "fix" for this PR would mean writing code that still grants elevated access, which MatrixReview will not do.</p>
+              <p style="margin-top:8px;"><strong>The correct action is to reject this PR entirely</strong> and discuss the access control requirements with the security team.</p>
+            </div>
+            <div style="padding:12px 16px;border-radius:4px;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(255,68,68,0.08);color:#ff4444;border:1px solid rgba(255,68,68,0.3);">
+              &#10007; PR Intent Invalid. Auto-fix blocked. Requires security team review.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Fix demo tab switching
+    document.querySelectorAll('.demo-tab').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.demo-tab').forEach(function(t) {
+          t.classList.remove('active');
+          t.style.background = 'transparent';
+          t.style.borderColor = 'var(--border-green)';
+          t.style.color = 'var(--text-muted)';
+        });
+        this.classList.add('active');
+        this.style.background = 'rgba(0,255,65,0.08)';
+        this.style.borderColor = 'var(--green-bright)';
+        this.style.color = 'var(--green-bright)';
+        document.querySelectorAll('.demo-scenario').forEach(function(p) { p.style.display = 'none'; });
+        document.getElementById('demo-' + this.dataset.demo).style.display = 'block';
+        // Hide results when switching
+        document.querySelectorAll('[id^="fix-result-"]').forEach(function(r) { r.style.display = 'none'; });
+      });
+    });
+
+    function showFixResult(type) {
+      var result = document.getElementById('fix-result-' + type);
+      if (result.style.display === 'block') return;
+      result.style.display = 'block';
+      result.style.opacity = '0';
+      result.style.transform = 'translateY(8px)';
+      result.style.transition = 'opacity 0.4s, transform 0.4s';
+      setTimeout(function() { result.style.opacity = '1'; result.style.transform = 'translateY(0)'; }, 50);
+    }
+  </script>
 
   <!-- ═══════════════ CTA ═══════════════ -->
   <section class="cta-section">
