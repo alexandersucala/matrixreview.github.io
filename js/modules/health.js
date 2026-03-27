@@ -137,6 +137,9 @@ function renderFindings(findings, repo) {
             ? `https://github.com/${repo}/blob/main/${filePath}${line ? '#L' + line : ''}`
             : '';
 
+        const descPreview = (desc || '').length > 80 ? desc.substring(0, 77) + '...' : desc;
+        const evidenceDisplay = f.evidence || '';
+
         return `<div class="hf-row" data-idx="${i}">
             <div class="hf-row-header">
                 <div class="hf-sev" style="background:${sevColor(severity)};"></div>
@@ -158,9 +161,9 @@ function renderFindings(findings, repo) {
 
                     ${agent ? `<span class="hf-detail-label">Agent</span><span class="hf-detail-value">${esc(agent)}</span>` : ''}
 
-                    ${desc ? `<span class="hf-detail-label">Detail</span><span class="hf-detail-value">${esc(desc)}</span>` : ''}
+                    ${desc ? `<span class="hf-detail-label">Detail</span><span class="hf-detail-value" style="word-wrap:break-word;overflow-wrap:break-word;">${esc(desc)}</span>` : ''}
 
-                    ${f.evidence ? `<span class="hf-detail-label">Code</span><span class="hf-detail-value"><code style="display:block;background:#0a0e14;padding:8px 12px;border-radius:4px;border:1px solid #1e2a3a;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-all;color:#e8ecf0;">${esc(f.evidence)}</code></span>` : ''}
+                    ${evidenceDisplay ? `<span class="hf-detail-label">Code</span><span class="hf-detail-value"><code style="display:block;background:#0a0e14;padding:8px 12px;border-radius:4px;border:1px solid #1e2a3a;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-all;color:#e8ecf0;">${esc(evidenceDisplay)}</code></span>` : ''}
                 </div>
                 ${ghUrl ? `<a class="hf-github-link" href="${ghUrl}" target="_blank" onclick="event.stopPropagation();">View on GitHub &#8594;</a>` : ''}
             </div>
@@ -214,7 +217,13 @@ function parseMarkdownFindings(body) {
         // Match simpler patterns: - DETECTOR_NAME in filepath: description
         const m2 = line.match(/^-\s*(\w+)\s+in\s+(\S+)\s*:?\s*(.*)/);
         if (m2 && m2[1] === m2[1].toUpperCase() && m2[1].length > 3) {
-            findings.push({ file_path: m2[2], detector: m2[1], description: m2[3], severity: 'MEDIUM', agent: 'unknown' });
+            findings.push({ file_path: m2[2], detector: m2[1], description: m2[3], severity: 'MEDIUM', agent: 'unknown', evidence: '' });
+        }
+
+        // Match dead code pattern: - Potential dead code: filepath is not imported...
+        const m3 = line.match(/^-\s*Potential dead code:\s*(\S+)\s+(.*)/);
+        if (m3) {
+            findings.push({ file_path: m3[1], detector: 'DEAD_CODE', description: m3[2], severity: 'LOW', agent: 'dependency_risk', evidence: '' });
         }
     }
 
