@@ -1,36 +1,24 @@
 /**
- * MatrixReview Dashboard — Overview Module v2
- * Handles missing structured health data by parsing from API response.
+ * MatrixReview Dashboard — Overview Module v3
+ * Health score derived from PR review history. No agent scan data.
  * Save to: C:\Matrixreview.io\js\modules\overview.js
  */
 export default {
     async render(container, ctx) {
         const data = await ctx.api.getOverview(ctx.slug);
 
-        // Try to get health score, fall back to loading health report directly
-        let healthScore = data.health?.health_score ?? null;
-        let findingsCount = data.health?.findings_count ?? 0;
+        // PR-derived health
+        let score = null;
+        let grade = { letter: '?', color: '#556677' };
+        const reviews = data.reviews?.recent || [];
+        const totalReviews = data.reviews?.total || 0;
 
-        if ((healthScore === null || healthScore === 0) && data.health) {
-            // Health data exists but score is 0/null. Try loading full report.
-            try {
-                const fullHealth = await ctx.api.getHealth(ctx.slug);
-                if (fullHealth.body) {
-                    const sm = fullHealth.body.match(/Health Score:\*\*\s*(\d+)\/100/);
-                    if (sm) healthScore = parseInt(sm[1]);
-                    const cm = fullHealth.body.match(/Critical\s*\((\d+)\)/);
-                    const hm = fullHealth.body.match(/High\s*\((\d+)\)/);
-                    const mm = fullHealth.body.match(/Medium\s*\((\d+)\)/);
-                    const lm = fullHealth.body.match(/Low\s*\((\d+)\)/);
-                    findingsCount = (cm ? parseInt(cm[1]) : 0) + (hm ? parseInt(hm[1]) : 0) + (mm ? parseInt(mm[1]) : 0) + (lm ? parseInt(lm[1]) : 0);
-                    if (healthScore === null || healthScore === 0) {
-                        healthScore = Math.max(0, 100 - ((cm ? parseInt(cm[1]) : 0) * 10) - ((hm ? parseInt(hm[1]) : 0) * 5) - ((mm ? parseInt(mm[1]) : 0) * 2) - ((lm ? parseInt(lm[1]) : 0) * 1));
-                    }
-                }
-            } catch (e) { /* Health report not available */ }
+        if (reviews.length > 0) {
+            const greens = reviews.filter(r => r.traffic_light === 'GREEN').length;
+            const yellows = reviews.filter(r => r.traffic_light === 'YELLOW').length;
+            score = Math.round(((greens * 100) + (yellows * 50)) / reviews.length);
+            grade = getGrade(score);
         }
-
-        const sg = healthScore !== null ? getGrade(healthScore) : { letter: '?', color: '#555' };
 
         container.innerHTML = `
             <div class="overview-grid">
@@ -39,35 +27,35 @@ export default {
                     <p class="subtitle">Dashboard overview</p>
                 </div>
 
-                <div class="stat-card health-card" onclick="location.hash='health'" style="display:flex;align-items:center;gap:20px;">
-                    <div style="width:80px;height:80px;border-radius:50%;background:conic-gradient(${sg.color} ${(healthScore || 0) * 3.6}deg, #1e2a3a 0);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <div style="width:60px;height:60px;background:var(--bg-card);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                            <span style="font-size:24px;font-weight:700;color:${sg.color};">${sg.letter}</span>
-                            <span style="font-size:10px;color:#6b7a8d;">${healthScore ?? '?'}/100</span>
+                <div class="stat-card health-card" onclick="location.hash='health'" style="display:flex;align-items:center;gap:20px;cursor:pointer;">
+                    <div style="width:80px;height:80px;border-radius:50%;background:conic-gradient(${grade.color} ${(score || 0) * 3.6}deg, #1e2a3a 0);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <div style="width:60px;height:60px;background:#131B26;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                            <span style="font-size:24px;font-weight:700;color:${grade.color};">${grade.letter}</span>
+                            <span style="font-size:10px;color:#6b7a8d;">${score !== null ? score + '/100' : 'No PRs'}</span>
                         </div>
                     </div>
                     <div>
-                        <span style="font-size:14px;">Health Score</span><br>
-                        <span style="font-size:12px;color:#6b7a8d;">${findingsCount} findings</span>
+                        <span style="font-size:14px;color:#e8ecf0;">PR Health</span><br>
+                        <span style="font-size:12px;color:#6b7a8d;">${totalReviews} reviews</span>
                     </div>
                 </div>
 
-                <div class="stat-card" onclick="location.hash='docs'">
+                <div class="stat-card" onclick="location.hash='docs'" style="cursor:pointer;">
                     <div class="stat-number">${data.docs.total}</div>
                     <div class="stat-label">Documents</div>
-                    <div class="stat-breakdown">${Object.entries(data.docs.by_gate).map(([g, c]) => g + ': ' + c).join(' · ')}</div>
+                    <div class="stat-breakdown">${Object.entries(data.docs.by_gate).map(([g, c]) => g + ': ' + c).join(' . ')}</div>
                 </div>
 
-                <div class="stat-card" onclick="location.hash='reviews'">
-                    <div class="stat-number">${data.reviews.total}</div>
+                <div class="stat-card" onclick="location.hash='reviews'" style="cursor:pointer;">
+                    <div class="stat-number">${totalReviews}</div>
                     <div class="stat-label">PR Reviews</div>
-                    <div class="stat-breakdown">${data.reviews.recent.length > 0 ? 'Latest: ' + data.reviews.recent[0].traffic_light : 'No reviews yet'}</div>
+                    <div class="stat-breakdown">${reviews.length > 0 ? 'Latest: ' + reviews[0].traffic_light : 'No reviews yet'}</div>
                 </div>
 
-                <div class="stat-card" onclick="location.hash='graph'">
+                <div class="stat-card" onclick="location.hash='graph'" style="cursor:pointer;">
                     <div class="stat-number">${data.graph ? data.graph.total_files.toLocaleString() : '\u2014'}</div>
                     <div class="stat-label">Source Files</div>
-                    <div class="stat-breakdown">${data.graph ? data.graph.total_edges.toLocaleString() + ' deps · ' + data.graph.entry_points + ' entry points' : 'No graph'}</div>
+                    <div class="stat-breakdown">${data.graph ? data.graph.total_edges.toLocaleString() + ' deps . ' + data.graph.entry_points + ' entry points' : 'No graph'}</div>
                 </div>
 
                 ${data.graph && data.graph.languages ? `
@@ -89,10 +77,10 @@ export default {
                     ).join('')}</div>
                 </div>` : ''}
 
-                ${data.reviews.recent.length > 0 ? `
+                ${reviews.length > 0 ? `
                 <div class="stat-card wide">
                     <h3>Recent Reviews</h3>
-                    <div>${data.reviews.recent.slice(0, 5).map(r =>
+                    <div>${reviews.slice(0, 5).map(r =>
                         `<div onclick="location.hash='reviews:${r.id}'" style="display:flex;align-items:center;gap:12px;padding:8px 0;cursor:pointer;border-bottom:1px solid #1e2a3a;">
                             <span>${light(r.traffic_light)}</span>
                             <span style="font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.pr_title || 'Untitled'}</span>

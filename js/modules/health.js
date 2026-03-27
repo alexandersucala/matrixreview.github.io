@@ -1,235 +1,154 @@
 /**
- * MatrixReview Dashboard — Health Module v3
- * Clickable findings expand to show file path, line, detection detail, GitHub link.
- * Parses score and findings from markdown body when structured data is missing.
+ * MatrixReview Dashboard — Health Module v4
+ * Health score derived from PR review history.
+ * No more agent-based scanning. Score reflects how PRs are trending.
  * Save to: C:\Matrixreview.io\js\modules\health.js
  */
 export default {
     async render(container, ctx) {
-        const data = await ctx.api.getHealth(ctx.slug);
+        // Load PR review stats
+        let stats = {};
+        let reviews = [];
+        try {
+            stats = await ctx.api.getReviewStats(ctx.slug);
+            const rd = await ctx.api.getReviews(ctx.slug, 1, 50);
+            reviews = rd.reviews || [];
+        } catch (e) {}
 
-        // Get the repo name for GitHub links
-        let repo = data.repo || '';
-        if (!repo) {
-            try { const ov = await ctx.api.getOverview(ctx.slug); repo = ov.company?.github_repo || ''; } catch(e) {}
+        // Calculate health from PR data
+        const total = reviews.length;
+        const greens = reviews.filter(r => r.traffic_light === 'GREEN').length;
+        const yellows = reviews.filter(r => r.traffic_light === 'YELLOW').length;
+        const reds = reviews.filter(r => r.traffic_light === 'RED').length;
+
+        let score = 0;
+        let grade = { letter: '?', color: '#556677' };
+        let hasData = total > 0;
+
+        if (hasData) {
+            // Score: weighted percentage. GREEN=100, YELLOW=50, RED=0
+            score = Math.round(((greens * 100) + (yellows * 50)) / total);
+            grade = getGrade(score);
         }
 
-        // Parse structured findings from the markdown body
-        let parsedFindings = [];
-        let score = data.health_score;
-        let findingsCount = data.findings_count || 0;
-
-        if (data.body) {
-            parsedFindings = parseMarkdownFindings(data.body);
-            findingsCount = parsedFindings.length || findingsCount;
-
-            if (!score && score !== 0) {
-                const sm = data.body.match(/Health Score:\*\*\s*(\d+)\/100/);
-                if (sm) score = parseInt(sm[1]);
-            }
+        // Trend: compare first half vs second half of reviews
+        let trend = 'stable';
+        let trendIcon = '\u2194';
+        if (total >= 6) {
+            const half = Math.floor(total / 2);
+            const olderGreens = reviews.slice(half).filter(r => r.traffic_light === 'GREEN').length;
+            const newerGreens = reviews.slice(0, half).filter(r => r.traffic_light === 'GREEN').length;
+            const olderRate = olderGreens / (total - half);
+            const newerRate = newerGreens / half;
+            if (newerRate > olderRate + 0.1) { trend = 'improving'; trendIcon = '\u2197'; }
+            else if (newerRate < olderRate - 0.1) { trend = 'declining'; trendIcon = '\u2198'; }
         }
 
-        // Use structured findings if available, otherwise parsed
-        let findings = (data.findings && data.findings.length) ? data.findings : parsedFindings;
-        if (!score && score !== 0) score = 0;
-        const grade = getGrade(score);
-
-        // Count by severity
-        const bySev = {};
-        for (const f of findings) { const s = f.severity || 'UNKNOWN'; bySev[s] = (bySev[s] || 0) + 1; }
-
-        // Count by agent
-        const byAgent = {};
-        for (const f of findings) { const a = f.agent || 'unknown'; byAgent[a] = (byAgent[a] || 0) + 1; }
+        // Gate breakdown from stats
+        const byGate = stats.by_gate || {};
+        const byLight = stats.by_traffic_light || {};
+        const avgFindings = stats.avg_findings_per_review || 0;
 
         container.innerHTML = `
             <div style="max-width:960px;">
-                <div style="display:flex;align-items:center;gap:24px;margin-bottom:24px;">
+                <div style="display:flex;align-items:center;gap:24px;margin-bottom:32px;">
                     <div style="text-align:center;">
-                        <div style="font-size:56px;font-weight:700;color:${grade.color};">${grade.letter}</div>
-                        <div style="font-size:14px;color:#6b7a8d;">${score}/100</div>
+                        <div style="font-size:56px;font-weight:700;color:${grade.color};">${hasData ? grade.letter : '?'}</div>
+                        <div style="font-size:14px;color:#6b7a8d;">${hasData ? score + '/100' : 'No PRs yet'}</div>
                     </div>
                     <div>
-                        <h2 style="color:#e8ecf0;margin:0;">Codebase Health Report</h2>
-                        <p style="color:#6b7a8d;margin:4px 0 0;">${repo || ctx.slug}</p>
-                        <p style="font-size:13px;color:#6b7a8d;margin-top:4px;">
-                            ${findingsCount} findings across ${Object.keys(byAgent).length} agents
-                        </p>
+                        <h2 style="color:#e8ecf0;margin:0;">PR Health</h2>
+                        <p style="color:#6b7a8d;margin:4px 0 0;">Based on ${total} reviewed pull requests</p>
+                        ${hasData ? `<p style="font-size:13px;color:${trend === 'improving' ? '#00ff41' : trend === 'declining' ? '#ff4444' : '#6b7a8d'};margin-top:4px;">${trendIcon} Trend: ${trend}</p>` : ''}
                     </div>
                 </div>
 
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-                    ${Object.entries(bySev).sort((a,b) => sevOrder(a[0]) - sevOrder(b[0])).map(([s, c]) =>
-                        `<div style="background:${sevBg(s)};border:1px solid ${sevColor(s)};border-radius:6px;padding:6px 14px;text-align:center;">
-                            <div style="font-size:18px;font-weight:600;color:${sevColor(s)};">${c}</div>
-                            <div style="font-size:10px;color:${sevColor(s)};text-transform:uppercase;letter-spacing:0.5px;">${s}</div>
+                ${hasData ? `
+                <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+                    <div style="background:#131B26;border:1px solid #1e2a3a;border-radius:8px;padding:16px 24px;text-align:center;flex:1;min-width:100px;">
+                        <div style="font-size:28px;font-weight:600;color:#00ff41;">${greens}</div>
+                        <div style="font-size:11px;color:#6b7a8d;text-transform:uppercase;margin-top:4px;">Green</div>
+                    </div>
+                    <div style="background:#131B26;border:1px solid #1e2a3a;border-radius:8px;padding:16px 24px;text-align:center;flex:1;min-width:100px;">
+                        <div style="font-size:28px;font-weight:600;color:#ffcc00;">${yellows}</div>
+                        <div style="font-size:11px;color:#6b7a8d;text-transform:uppercase;margin-top:4px;">Yellow</div>
+                    </div>
+                    <div style="background:#131B26;border:1px solid #1e2a3a;border-radius:8px;padding:16px 24px;text-align:center;flex:1;min-width:100px;">
+                        <div style="font-size:28px;font-weight:600;color:#ff4444;">${reds}</div>
+                        <div style="font-size:11px;color:#6b7a8d;text-transform:uppercase;margin-top:4px;">Red</div>
+                    </div>
+                    <div style="background:#131B26;border:1px solid #1e2a3a;border-radius:8px;padding:16px 24px;text-align:center;flex:1;min-width:100px;">
+                        <div style="font-size:28px;font-weight:600;color:#e8ecf0;">${avgFindings.toFixed ? avgFindings.toFixed(1) : avgFindings}</div>
+                        <div style="font-size:11px;color:#6b7a8d;text-transform:uppercase;margin-top:4px;">Avg Findings/PR</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:24px;">
+                    <h3 style="color:#e8ecf0;font-size:14px;margin-bottom:12px;">PR Timeline</h3>
+                    <div style="display:flex;gap:3px;align-items:end;height:60px;">
+                        ${reviews.slice(0, 50).reverse().map(r => {
+                            const color = r.traffic_light === 'GREEN' ? '#00ff41' : r.traffic_light === 'YELLOW' ? '#ffcc00' : '#ff4444';
+                            const height = Math.max(8, Math.min(60, (r.finding_count || 0) * 4 + 8));
+                            return `<div title="${r.pr_title || 'PR'}: ${r.traffic_light}, ${r.finding_count} findings" style="flex:1;min-width:4px;max-width:16px;height:${height}px;background:${color};border-radius:2px 2px 0 0;cursor:pointer;opacity:0.8;" onclick="location.hash='reviews:${r.id}'"></div>`;
+                        }).join('')}
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                        <span style="font-size:10px;color:#556677;">Oldest</span>
+                        <span style="font-size:10px;color:#556677;">Newest</span>
+                    </div>
+                </div>
+
+                ${Object.keys(byGate).length > 0 ? `
+                <div style="margin-bottom:24px;">
+                    <h3 style="color:#e8ecf0;font-size:14px;margin-bottom:12px;">Findings by Gate</h3>
+                    ${Object.entries(byGate).map(([gate, count]) => {
+                        const gateColors = { SECURITY: '#ff4444', ARCHITECTURE: '#6366f1', STYLE: '#f59e0b', ONBOARDING: '#22c55e', LEGAL: '#8b5cf6' };
+                        const color = gateColors[gate] || '#6b7a8d';
+                        const maxCount = Math.max(...Object.values(byGate));
+                        const width = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                        return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                            <span style="width:120px;font-size:12px;color:#6b7a8d;">${gate}</span>
+                            <div style="flex:1;height:20px;background:#0a0e14;border-radius:4px;overflow:hidden;">
+                                <div style="width:${width}%;height:100%;background:${color};border-radius:4px;transition:width 0.5s;"></div>
+                            </div>
+                            <span style="width:40px;text-align:right;font-size:13px;color:#e8ecf0;">${count}</span>
+                        </div>`;
+                    }).join('')}
+                </div>
+                ` : ''}
+
+                ${stats.by_author && Object.keys(stats.by_author).length > 0 ? `
+                <div>
+                    <h3 style="color:#e8ecf0;font-size:14px;margin-bottom:12px;">By Author</h3>
+                    ${Object.entries(stats.by_author).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([author, count]) =>
+                        `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1e2a3a;cursor:pointer;" onclick="location.hash='reviews'">
+                            <span style="font-size:13px;color:#e8ecf0;">${author}</span>
+                            <span style="font-size:13px;color:#6b7a8d;">${count} PRs</span>
                         </div>`
                     ).join('')}
                 </div>
+                ` : ''}
 
-                <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-                    <button class="hf-btn active" data-filter="all">All (${findings.length})</button>
-                    ${Object.entries(bySev).sort((a,b) => sevOrder(a[0]) - sevOrder(b[0])).map(([s, c]) =>
-                        `<button class="hf-btn" data-filter="${s}" style="--hfc:${sevColor(s)};">${s} (${c})</button>`
-                    ).join('')}
+                ` : `
+                <div style="text-align:center;padding:60px 20px;background:#131B26;border:1px solid #1e2a3a;border-radius:8px;">
+                    <div style="font-size:40px;margin-bottom:12px;">📊</div>
+                    <h3 style="color:#e8ecf0;margin-bottom:8px;">No PR data yet</h3>
+                    <p style="color:#6b7a8d;font-size:13px;">Health score will populate as MatrixReview reviews pull requests on this repo. Open a PR to get started.</p>
                 </div>
+                `}
 
-                <div id="health-findings-list">${renderFindings(findings, repo)}</div>
-            </div>
-
-            <style>
-                .hf-btn { background: transparent; border: 1px solid #1e2a3a; color: #6b7a8d; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-                .hf-btn:hover { border-color: #3a4a5a; color: #c5cdd8; }
-                .hf-btn.active { background: rgba(0,255,65,0.08); border-color: #00ff41; color: #00ff41; }
-                .hf-row { border-bottom: 1px solid #1e2a3a; cursor: pointer; transition: background 0.15s; }
-                .hf-row:hover { background: rgba(255,255,255,0.02); }
-                .hf-row-header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
-                .hf-detail { display: none; padding: 0 12px 14px 38px; }
-                .hf-row.expanded .hf-detail { display: block; }
-                .hf-sev { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-                .hf-file { font-size: 13px; color: #c5cdd8; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-                .hf-type { font-size: 11px; color: #6b7a8d; background: #131B26; padding: 2px 8px; border-radius: 3px; flex-shrink: 0; }
-                .hf-detail-grid { display: grid; grid-template-columns: 100px 1fr; gap: 4px 12px; font-size: 12px; }
-                .hf-detail-label { color: #556677; }
-                .hf-detail-value { color: #c5cdd8; word-break: break-all; }
-                .hf-github-link { display: inline-block; margin-top: 8px; font-size: 12px; color: #00ff41; text-decoration: none; }
-                .hf-github-link:hover { text-decoration: underline; }
-            </style>`;
-
-        // Filter buttons
-        container.querySelectorAll('.hf-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                container.querySelectorAll('.hf-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const f = btn.dataset.filter;
-                const filtered = f === 'all' ? findings : findings.filter(fi => fi.severity === f);
-                document.getElementById('health-findings-list').innerHTML = renderFindings(filtered, repo);
-                bindFindingClicks();
-            });
-        });
-
-        bindFindingClicks();
-
-        function bindFindingClicks() {
-            container.querySelectorAll('.hf-row').forEach(row => {
-                row.addEventListener('click', () => row.classList.toggle('expanded'));
-            });
-        }
+                <div style="margin-top:24px;padding:16px;background:#131B26;border:1px solid #1e2a3a;border-radius:8px;">
+                    <h4 style="color:#6b7a8d;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">How this score works</h4>
+                    <p style="color:#556677;font-size:12px;line-height:1.6;">
+                        Health score is derived from your PR review history. GREEN PRs score 100, YELLOW scores 50, RED scores 0.
+                        The score is the weighted average across your last ${total || 50} reviews.
+                        Trend compares your recent PRs against older ones to show if code quality is improving or declining.
+                    </p>
+                </div>
+            </div>`;
     },
     destroy() {}
 };
-
-
-function renderFindings(findings, repo) {
-    if (!findings.length) return '<div style="padding:40px;text-align:center;color:#6b7a8d;">No findings</div>';
-
-    return findings.map((f, i) => {
-        const filePath = f.file_path || f.file || '';
-        const fileName = filePath.split('/').pop() || 'unknown';
-        const shortPath = filePath.length > 60 ? '.../' + filePath.split('/').slice(-3).join('/') : filePath;
-        const line = f.line || f.line_number || '';
-        const detector = f.detector || f.type || f.finding_type || '';
-        const desc = f.description || f.evidence || f.detail || '';
-        const agent = f.agent || '';
-        const severity = f.severity || 'UNKNOWN';
-
-        const ghUrl = repo && filePath
-            ? `https://github.com/${repo}/blob/main/${filePath}${line ? '#L' + line : ''}`
-            : '';
-
-        const descPreview = (desc || '').length > 80 ? desc.substring(0, 77) + '...' : desc;
-        const evidenceDisplay = f.evidence || '';
-
-        return `<div class="hf-row" data-idx="${i}">
-            <div class="hf-row-header">
-                <div class="hf-sev" style="background:${sevColor(severity)};"></div>
-                <span class="hf-file" title="${esc(filePath)}">${esc(shortPath)}${line ? ':' + line : ''}</span>
-                <span class="hf-type">${esc(detector)}</span>
-            </div>
-            <div class="hf-detail">
-                <div class="hf-detail-grid">
-                    <span class="hf-detail-label">File</span>
-                    <span class="hf-detail-value">${esc(filePath)}</span>
-
-                    ${line ? `<span class="hf-detail-label">Line</span><span class="hf-detail-value">${line}</span>` : ''}
-
-                    <span class="hf-detail-label">Severity</span>
-                    <span class="hf-detail-value" style="color:${sevColor(severity)};">${severity}</span>
-
-                    <span class="hf-detail-label">Detection</span>
-                    <span class="hf-detail-value">${esc(detector)}</span>
-
-                    ${agent ? `<span class="hf-detail-label">Agent</span><span class="hf-detail-value">${esc(agent)}</span>` : ''}
-
-                    ${desc ? `<span class="hf-detail-label">Detail</span><span class="hf-detail-value" style="word-wrap:break-word;overflow-wrap:break-word;">${esc(desc)}</span>` : ''}
-
-                    ${evidenceDisplay ? `<span class="hf-detail-label">Code</span><span class="hf-detail-value"><code style="display:block;background:#0a0e14;padding:8px 12px;border-radius:4px;border:1px solid #1e2a3a;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-all;color:#e8ecf0;">${esc(evidenceDisplay)}</code></span>` : ''}
-                </div>
-                ${ghUrl ? `<a class="hf-github-link" href="${ghUrl}" target="_blank" onclick="event.stopPropagation();">View on GitHub &#8594;</a>` : ''}
-            </div>
-        </div>`;
-    }).join('');
-}
-
-
-function parseMarkdownFindings(body) {
-    const findings = [];
-    const lines = body.split('\n');
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        // Match: ● **DETECTOR** in `file` (line N): description
-        // Also: - **DETECTOR** in `file` (line N): description
-        const m1 = line.match(/^[●\-\*]\s*\*?\*?(\w+)\*?\*?\s*in\s*`([^`]+)`\s*(?:\(line\s*(\d+)\))?\s*:?\s*(.*)/);
-        if (m1) {
-            const detector = m1[1];
-            const filePath = m1[2];
-            const lineNum = m1[3] ? parseInt(m1[3]) : null;
-            const desc = m1[4] || '';
-
-            // Check next line for evidence (starts with > `)
-            let evidence = '';
-            if (i + 1 < lines.length) {
-                const nextLine = lines[i + 1];
-                const evMatch = nextLine.match(/^>\s*`(.+)`\s*$/);
-                if (evMatch) {
-                    evidence = evMatch[1];
-                    i++; // skip the evidence line
-                }
-            }
-
-            let severity = 'MEDIUM';
-            if (/HARDCODED_SECRET|API_KEY|PRIVATE_KEY|SQL_INJECTION|COMMAND_INJECTION/.test(detector)) severity = 'CRITICAL';
-            else if (/INSECURE_CRYPTO|PATH_TRAVERSAL|MISSING_AUTH|CIRCULAR_DEP/.test(detector)) severity = 'HIGH';
-            else if (/HIGH_FAN_IN|DEAD_CODE|MISSING_DOCSTRING|INCONSISTENT_NAMING/.test(detector)) severity = 'MEDIUM';
-            else if (/LONG_FUNCTION|MISSING_LICENSE/.test(detector)) severity = 'LOW';
-
-            let agent = 'unknown';
-            if (/SECRET|API_KEY|PRIVATE_KEY|PASSWORD|TOKEN/.test(detector)) agent = 'secret_scanner';
-            else if (/FAN_IN|CIRCULAR|DEAD_CODE|ORPHAN|ENTRY_POINT/.test(detector)) agent = 'dependency_risk';
-            else if (/DOCSTRING|MISSING_DOC/.test(detector)) agent = 'doc_coverage';
-            else if (/SQL_INJECTION|COMMAND|PATH_TRAVERSAL|CRYPTO|AUTH/.test(detector)) agent = 'security_patterns';
-
-            findings.push({ file_path: filePath, line: lineNum, detector, description: desc, severity, agent, evidence });
-            continue;
-        }
-
-        // Match simpler patterns: - DETECTOR_NAME in filepath: description
-        const m2 = line.match(/^-\s*(\w+)\s+in\s+(\S+)\s*:?\s*(.*)/);
-        if (m2 && m2[1] === m2[1].toUpperCase() && m2[1].length > 3) {
-            findings.push({ file_path: m2[2], detector: m2[1], description: m2[3], severity: 'MEDIUM', agent: 'unknown', evidence: '' });
-        }
-
-        // Match dead code pattern: - Potential dead code: filepath is not imported...
-        const m3 = line.match(/^-\s*Potential dead code:\s*(\S+)\s+(.*)/);
-        if (m3) {
-            findings.push({ file_path: m3[1], detector: 'DEAD_CODE', description: m3[2], severity: 'LOW', agent: 'dependency_risk', evidence: '' });
-        }
-    }
-
-    return findings;
-}
-
 
 function getGrade(s) {
     if (s >= 90) return { letter: 'A', color: '#00ff41' };
@@ -238,17 +157,3 @@ function getGrade(s) {
     if (s >= 50) return { letter: 'D', color: '#ff8800' };
     return { letter: 'F', color: '#ff4444' };
 }
-
-function sevColor(s) {
-    return s === 'CRITICAL' ? '#ff4444' : s === 'HIGH' ? '#ff8800' : s === 'MEDIUM' ? '#ffcc00' : s === 'LOW' ? '#3fb950' : '#6b7a8d';
-}
-
-function sevBg(s) {
-    return s === 'CRITICAL' ? 'rgba(255,68,68,0.1)' : s === 'HIGH' ? 'rgba(255,136,0,0.1)' : s === 'MEDIUM' ? 'rgba(255,204,0,0.1)' : s === 'LOW' ? 'rgba(63,185,80,0.1)' : 'rgba(100,100,100,0.1)';
-}
-
-function sevOrder(s) {
-    return s === 'CRITICAL' ? 0 : s === 'HIGH' ? 1 : s === 'MEDIUM' ? 2 : s === 'LOW' ? 3 : 4;
-}
-
-function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
