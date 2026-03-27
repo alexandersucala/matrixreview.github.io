@@ -6,8 +6,22 @@
 export default {
     async render(container, ctx) {
         if (ctx.subId) { await renderDetail(container, ctx); return; }
-        const [rd, stats] = await Promise.all([ctx.api.getReviews(ctx.slug, 1, 200), ctx.api.getReviewStats(ctx.slug)]);
-        const reviews = rd.reviews;
+
+        let rd = { reviews: [], total: 0 };
+        let stats = { total_reviews: 0, total_findings: 0, avg_findings_per_review: 0, by_traffic_light: {}, by_gate: {}, by_author: {} };
+
+        try {
+            const results = await Promise.all([
+                ctx.api.getReviews(ctx.slug, 1, 200),
+                ctx.api.getReviewStats(ctx.slug),
+            ]);
+            rd = results[0] || rd;
+            stats = results[1] || stats;
+        } catch (e) {
+            console.error('Reviews load error:', e);
+        }
+
+        const reviews = rd.reviews || [];
 
         // Extract unique authors
         const authors = [...new Set(reviews.map(r => r.author).filter(Boolean))].sort();
@@ -116,7 +130,19 @@ export default {
 };
 
 async function renderDetail(container, ctx) {
-    const r = await ctx.api.getReview(ctx.slug, ctx.subId);
+    let r;
+    try {
+        r = await ctx.api.getReview(ctx.slug, ctx.subId);
+    } catch (e) {
+        container.innerHTML = `<div style="padding:40px;text-align:center;"><p style="color:#ff4444;">Failed to load review</p><p style="color:#6b7a8d;font-size:13px;">${e.message || 'Unknown error'}</p><button onclick="location.hash='reviews'" style="margin-top:16px;background:none;border:1px solid #1e2a3a;color:#c5cdd8;padding:6px 14px;border-radius:6px;cursor:pointer;">Back to Reviews</button></div>`;
+        return;
+    }
+
+    if (!r || !r.gates) {
+        container.innerHTML = `<div style="padding:40px;text-align:center;color:#6b7a8d;">Review not found<br><button onclick="location.hash='reviews'" style="margin-top:16px;background:none;border:1px solid #1e2a3a;color:#c5cdd8;padding:6px 14px;border-radius:6px;cursor:pointer;">Back to Reviews</button></div>`;
+        return;
+    }
+
     let repo = '';
     try { const ov = await ctx.api.getOverview(ctx.slug); repo = ov.company?.github_repo || ''; } catch(e) {}
 
