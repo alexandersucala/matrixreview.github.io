@@ -159,6 +159,8 @@ function renderFindings(findings, repo) {
                     ${agent ? `<span class="hf-detail-label">Agent</span><span class="hf-detail-value">${esc(agent)}</span>` : ''}
 
                     ${desc ? `<span class="hf-detail-label">Detail</span><span class="hf-detail-value">${esc(desc)}</span>` : ''}
+
+                    ${f.evidence ? `<span class="hf-detail-label">Code</span><span class="hf-detail-value"><code style="display:block;background:#0a0e14;padding:8px 12px;border-radius:4px;border:1px solid #1e2a3a;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-all;color:#e8ecf0;">${esc(f.evidence)}</code></span>` : ''}
                 </div>
                 ${ghUrl ? `<a class="hf-github-link" href="${ghUrl}" target="_blank" onclick="event.stopPropagation();">View on GitHub &#8594;</a>` : ''}
             </div>
@@ -171,14 +173,27 @@ function parseMarkdownFindings(body) {
     const findings = [];
     const lines = body.split('\n');
 
-    for (const line of lines) {
-        // Match patterns like: - **HARDCODED_SECRET** in `file.ts` (line 12): description
-        const m1 = line.match(/^-\s*\*\*(\w+)\*\*\s*in\s*`([^`]+)`\s*(?:\(line\s*(\d+)\))?\s*:?\s*(.*)/);
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        // Match: ● **DETECTOR** in `file` (line N): description
+        // Also: - **DETECTOR** in `file` (line N): description
+        const m1 = line.match(/^[●\-\*]\s*\*?\*?(\w+)\*?\*?\s*in\s*`([^`]+)`\s*(?:\(line\s*(\d+)\))?\s*:?\s*(.*)/);
         if (m1) {
             const detector = m1[1];
             const filePath = m1[2];
             const lineNum = m1[3] ? parseInt(m1[3]) : null;
             const desc = m1[4] || '';
+
+            // Check next line for evidence (starts with > `)
+            let evidence = '';
+            if (i + 1 < lines.length) {
+                const nextLine = lines[i + 1];
+                const evMatch = nextLine.match(/^>\s*`(.+)`\s*$/);
+                if (evMatch) {
+                    evidence = evMatch[1];
+                    i++; // skip the evidence line
+                }
+            }
 
             let severity = 'MEDIUM';
             if (/HARDCODED_SECRET|API_KEY|PRIVATE_KEY|SQL_INJECTION|COMMAND_INJECTION/.test(detector)) severity = 'CRITICAL';
@@ -192,7 +207,7 @@ function parseMarkdownFindings(body) {
             else if (/DOCSTRING|MISSING_DOC/.test(detector)) agent = 'doc_coverage';
             else if (/SQL_INJECTION|COMMAND|PATH_TRAVERSAL|CRYPTO|AUTH/.test(detector)) agent = 'security_patterns';
 
-            findings.push({ file_path: filePath, line: lineNum, detector, description: desc, severity, agent });
+            findings.push({ file_path: filePath, line: lineNum, detector, description: desc, severity, agent, evidence });
             continue;
         }
 
