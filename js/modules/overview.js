@@ -23,7 +23,7 @@ export default {
         container.innerHTML = `
             <div class="overview-grid">
                 <div class="overview-header">
-                    <h2>${data.company.github_repo || data.company.name}</h2>
+                    <h2><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;display:inline-block;position:relative;top:-2px;"><rect width="32" height="32" rx="6" fill="#000" stroke="#1e2a3a" stroke-width="1"/><text x="16" y="23" font-family="monospace" font-size="22" font-weight="bold" fill="#00ff41" text-anchor="middle">M</text></svg>${data.company.github_repo || data.company.name}</h2>
                     <p class="subtitle">Dashboard overview</p>
                 </div>
 
