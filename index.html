@@ -659,6 +659,12 @@
     ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
   </style>
+  <!-- Reddit Pixel -->
+  <script>
+  !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_is913jwrampb",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt('init','a2_is913jwrampb');rdt('track', 'PageVisit');
+  </script>
+  <!-- DO NOT MODIFY UNLESS TO REPLACE A USER IDENTIFIER -->
+  <!-- End Reddit Pixel -->
 </head>
 <body>
 
@@ -683,7 +689,7 @@
         <a href="#fix-demo">Fix Generation</a>
         <a href="#how-it-works">How It Works</a>
         <a href="support.html">Support</a>
-        <a href="https://github.com/apps/matrixreview" class="topnav-cta">Install Free &rarr;</a>
+        <a href="https://github.com/apps/matrixreview" class="topnav-cta" onclick="rdt('track','Lead')">Install Free &rarr;</a>
       </div>
     </div>
   </nav>
@@ -699,7 +705,7 @@
         One-click fixes verified against your own standards. Every finding cited or killed.
       </p>
       <div class="hero-buttons">
-        <a href="https://github.com/apps/matrixreview" class="btn-primary">Install on GitHub. Free.</a>
+        <a href="https://github.com/apps/matrixreview" class="btn-primary" onclick="rdt('track','Lead')">Install on GitHub. Free.</a>
         <a href="#what" class="btn-secondary">See How It Works</a>
       </div>
     </div>
@@ -1433,7 +1439,7 @@ import { rateLimiter } from '@/middleware/rateLimit';
         <h2>Your docs already have the answers.<br><span style="color: var(--green-bright);">Start enforcing them.</span></h2>
         <p>Install in 30 seconds. Free during beta. First PR review lands before your coffee gets cold.</p>
         <div class="hero-buttons">
-          <a href="https://github.com/apps/matrixreview" class="btn-primary">Install on GitHub. Free.</a>
+          <a href="https://github.com/apps/matrixreview" class="btn-primary" onclick="rdt('track','Lead')">Install on GitHub. Free.</a>
         </div>
       </div>
     </div>
