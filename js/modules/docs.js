@@ -96,6 +96,26 @@ export default {
         }
 
         function bindAll() {
+            // Single delete buttons
+            container.querySelectorAll('.doc-delete-single').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const docId = btn.dataset.docId;
+                    const docName = btn.dataset.docName;
+                    if (!confirm(`Delete "${docName}"? This removes it from review gates.`)) return;
+                    btn.textContent = '...'; btn.disabled = true;
+                    try {
+                        await ctx.api.deleteDocs(ctx.slug, [docId]);
+                        // Remove row from DOM
+                        const row = btn.closest('.doc-row-click');
+                        if (row) row.remove();
+                    } catch (err) {
+                        alert('Delete failed: ' + err.message);
+                        btn.textContent = 'x'; btn.disabled = false;
+                    }
+                });
+            });
+
             // Checkbox handlers
             container.querySelectorAll('.doc-checkbox').forEach(cb => {
                 cb.addEventListener('change', (e) => {
@@ -196,7 +216,10 @@ function renderGates(byGate, colors) {
                     <input type="checkbox" class="doc-checkbox" data-doc-id="${d.id}" style="cursor:pointer;" onclick="event.stopPropagation();">
                     <span style="font-size:13px;color:#e8ecf0;">${d.filename}</span>
                 </div>
-                <span style="font-size:11px;color:#6b7a8d;">${d.chunk_count} chunks . v${d.version} . ${fmtSize(d.content_length)}</span>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:11px;color:#6b7a8d;">${d.chunk_count} chunks . v${d.version} . ${fmtSize(d.content_length)}</span>
+                    <button class="doc-delete-single" data-doc-id="${d.id}" data-doc-name="${esc(d.filename)}" onclick="event.stopPropagation();" style="background:none;border:1px solid #1e2a3a;color:#6b7a8d;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;transition:all 0.15s;" onmouseenter="this.style.borderColor='#ff4444';this.style.color='#ff4444';" onmouseleave="this.style.borderColor='#1e2a3a';this.style.color='#6b7a8d';">x</button>
+                </div>
             </div>
             <div id="doc-content-${d.id}" style="display:none;border-top:1px solid #1e2a3a;"></div>
         </div>`).join('')}</div>`;
