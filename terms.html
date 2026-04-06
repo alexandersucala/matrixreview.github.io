@@ -88,16 +88,17 @@
       <div class="topnav-links">
         <a href="/">Home</a>
         <a href="/privacy.html">Privacy</a>
+        <a href="/security.html">Security</a>
       </div>
     </div>
   </nav>
 
   <main>
     <h1>Terms of Service</h1>
-    <span class="effective">Effective: February 2026</span>
+    <span class="effective">Effective: April 2026</span>
 
     <h2>Service Description</h2>
-    <p>MatrixReview is an automated code review tool that analyzes pull requests against your team's documentation. The service is provided by MatrixReview ("Provider").</p>
+    <p>MatrixReview is an automated code review tool that analyzes pull requests against your team's documentation, API and implementation semantics, security policies, and style guides. The service is provided by MatrixReview ("Provider").</p>
 
     <h2>Acceptance</h2>
     <p>By installing the MatrixReview GitHub App, you agree to these terms. If you do not agree, do not install the app.</p>
@@ -125,7 +126,17 @@
     </ul>
 
     <h2>Data Handling</h2>
-    <p>See our <a href="/privacy.html">Privacy Policy</a> for details on data collection, storage, and retention.</p>
+    <p>See our <a href="/privacy.html">Privacy Policy</a> for details on data collection, storage, and retention, and our <a href="/security.html">Security page</a> for details on encryption, access controls, and compliance posture.</p>
+
+    <h2>Data Protection</h2>
+    <ul>
+      <li>All customer data is encrypted at rest (AES-256) and in transit (HTTPS/TLS).</li>
+      <li>Source code is never permanently stored. Repository clones are processed in temporary directories and deleted immediately.</li>
+      <li>PR diff data is automatically purged after 30 days.</li>
+      <li>You may request full deletion of all your data at any time.</li>
+      <li>You may export all your data in a portable JSON format at any time.</li>
+      <li>A Data Processing Agreement (DPA) is available on request for customers subject to GDPR or similar regulations.</li>
+    </ul>
 
     <h2>Disclaimer of Warranties</h2>
     <p>The service is provided "as is" without warranty of any kind, express or implied. The Provider does not guarantee that the service will identify all issues in your code, nor that findings will be free of false positives.</p>
@@ -151,6 +162,7 @@
       <a href="/">Home</a>
       <a href="/privacy.html">Privacy</a>
       <a href="/terms.html">Terms</a>
+      <a href="/security.html">Security</a>
       <a href="mailto:admin@matrixreview.io">Contact</a>
     </div>
     <p class="footer-copy">© <script>document.write(new Date().getFullYear())</script> MatrixReview</p>

@@ -88,27 +88,36 @@
       <div class="topnav-links">
         <a href="/">Home</a>
         <a href="/terms.html">Terms</a>
+        <a href="/security.html">Security</a>
       </div>
     </div>
   </nav>
 
   <main>
     <h1>Privacy Policy</h1>
-    <span class="effective">Effective: February 2026</span>
+    <span class="effective">Effective: April 2026</span>
 
     <h2>What We Collect</h2>
     <p>When you install MatrixReview on a GitHub repository, we access:</p>
     <ul>
-      <li><strong>Repository documentation files</strong> (.md, .rst, .txt) — scanned during setup to build your review knowledge base.</li>
-      <li><strong>Pull request diffs and metadata</strong> — read when a PR is opened or updated, used solely to perform the code review.</li>
-      <li><strong>GitHub installation identifiers</strong> — used to associate your repository with your review configuration.</li>
+      <li><strong>Repository documentation files</strong> (.md, .rst, .txt) scanned during setup to build your review knowledge base.</li>
+      <li><strong>Pull request diffs and metadata</strong> read when a PR is opened or updated, used solely to perform the code review.</li>
+      <li><strong>GitHub installation identifiers</strong> used to associate your repository with your review configuration.</li>
     </ul>
 
     <h2>What We Store</h2>
     <ul>
-      <li><strong>Documentation content</strong> — ingested and stored to power reviews. You can delete this at any time by uninstalling the app.</li>
-      <li><strong>Review results</strong> — findings, gate statuses, and traffic light outcomes are stored for quality improvement.</li>
-      <li><strong>PR diffs are not permanently stored.</strong> Diffs are processed in memory during a review and discarded after the review comment is posted.</li>
+      <li><strong>Documentation content</strong> ingested and stored in an encrypted database to power reviews. You can view, edit, and delete documents at any time from the dashboard.</li>
+      <li><strong>Review results</strong> including findings, gate statuses, and traffic light outcomes stored for dashboard history and quality tracking.</li>
+      <li><strong>Dependency graph metadata</strong> showing file relationships, import chains, and security tags. This is structural data (file paths, line counts), not code content.</li>
+      <li><strong>Audit log entries</strong> recording data access and mutations for security monitoring.</li>
+    </ul>
+
+    <h2>What We Do Not Store</h2>
+    <ul>
+      <li>We do not permanently store your source code. Repository clones are created in temporary directories and deleted immediately after processing.</li>
+      <li>We do not permanently store PR diffs. Diffs are retained for up to 30 days for fix generation, then automatically purged from both disk and database.</li>
+      <li>We do not store GitHub tokens beyond their session lifetime. Installation tokens are short-lived (1 hour) and generated via JWT.</li>
     </ul>
 
     <h2>What We Do Not Do</h2>
@@ -116,25 +125,35 @@
       <li>We do not sell your data to third parties.</li>
       <li>We do not use your code to train AI models.</li>
       <li>We do not access files beyond documentation and PR diffs.</li>
-      <li>We do not store your source code.</li>
     </ul>
 
-    <h2>Third-Party Services</h2>
-    <p>MatrixReview uses the following third-party services to operate:</p>
+    <h2>Third-Party Services (Subprocessors)</h2>
+    <p>MatrixReview uses the following third-party services to operate. A complete subprocessor list is maintained on our <a href="/security.html">Security page</a>.</p>
     <ul>
-      <li><strong>GitHub API</strong> — to read repository contents and post review comments.</li>
-      <li><strong>Anthropic Claude API</strong> — to perform AI-powered document analysis and code review.</li>
-      <li><strong>Railway</strong> — cloud hosting for the application backend.</li>
+      <li><strong>GitHub API</strong> to read repository contents and post review comments.</li>
+      <li><strong>DeepSeek</strong> for AI-powered PR review analysis. PR diff excerpts are sent via HTTPS and not stored by the provider.</li>
+      <li><strong>Anthropic Claude API</strong> for document classification and analysis during setup.</li>
+      <li><strong>Railway</strong> for cloud hosting of the application backend (United States).</li>
     </ul>
 
     <h2>Data Retention</h2>
-    <p>Documentation and review data are retained as long as the GitHub App is installed on your repository. Uninstalling the app triggers deletion of all stored data associated with your repository within 30 days.</p>
+    <p>Documentation and review metadata are retained as long as the GitHub App is installed on your repository. PR diff data is automatically purged after 30 days. You may request full data deletion at any time by contacting us or using the data deletion endpoint. Uninstalling the app triggers deletion of all stored data associated with your repository.</p>
+
+    <h2>Your Rights</h2>
+    <p>Under GDPR and applicable privacy regulations, you have the right to:</p>
+    <ul>
+      <li><strong>Access and export</strong> all data we hold about your repository via the data export endpoint.</li>
+      <li><strong>Delete</strong> all your data via the data deletion endpoint or by contacting us.</li>
+      <li><strong>Portability</strong> of your data in a standard JSON format.</li>
+      <li><strong>Object</strong> to processing or request restriction of processing by contacting us.</li>
+    </ul>
+    <p>A Data Processing Agreement (DPA) is available on request for customers requiring formal documentation of our processing relationship.</p>
 
     <h2>Security</h2>
-    <p>All communication occurs over HTTPS. GitHub tokens are used with minimum required permissions and are not stored beyond their session lifetime. Database access is restricted to the application backend.</p>
+    <p>All data is encrypted at rest (AES-256 via SQLCipher) and in transit (HTTPS/TLS). All data access is logged in an append-only audit trail. Infrastructure access is restricted to the founder. For full details, see our <a href="/security.html">Security page</a>.</p>
 
     <h2>Contact</h2>
-    <p>For privacy questions or data deletion requests: <a href="mailto:admin@matrixreview.io">admin@matrixreview.io</a></p>
+    <p>For privacy questions, data deletion requests, or DPA inquiries: <a href="mailto:admin@matrixreview.io">admin@matrixreview.io</a></p>
   </main>
 
   <footer>
@@ -142,6 +161,7 @@
       <a href="/">Home</a>
       <a href="/privacy.html">Privacy</a>
       <a href="/terms.html">Terms</a>
+      <a href="/security.html">Security</a>
       <a href="mailto:admin@matrixreview.io">Contact</a>
     </div>
     <p class="footer-copy">© <script>document.write(new Date().getFullYear())</script> MatrixReview</p>
