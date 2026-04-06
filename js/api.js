@@ -28,6 +28,9 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+    // Expose base URL for modules that need raw fetch (file upload)
+    base: API_BASE,
+
     // Companies
     listCompanies: () => request('/companies'),
 
@@ -47,6 +50,28 @@ export const api = {
     // Docs
     getDocs: (slug, gate = null) => request(`/${slug}/docs${gate ? `?gate=${gate}` : ''}`),
     getDoc: (slug, docId) => request(`/${slug}/docs/${docId}`),
+    updateDoc: (slug, docId, content) => request(`/${slug}/docs/${docId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ content }),
+    }),
+    uploadDoc: async (slug, file, gate) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('gate', gate);
+        const resp = await fetch(`${API_BASE}/${slug}/docs/upload`, {
+            method: 'POST',
+            body: formData,
+        });
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+            throw new Error(err.detail || `Upload failed: ${resp.status}`);
+        }
+        return await resp.json();
+    },
+    deleteDocs: (slug, docIds) => request(`/${slug}/docs`, {
+        method: 'DELETE',
+        body: JSON.stringify({ doc_ids: docIds }),
+    }),
 
     // Reviews
     getReviews: (slug, page = 1, perPage = 20) => request(`/${slug}/reviews?page=${page}&per_page=${perPage}`),
