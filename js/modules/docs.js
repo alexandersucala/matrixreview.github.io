@@ -13,18 +13,8 @@ export default {
             <div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                     <div><h2 style="color:#e8ecf0;margin:0;">Document Inventory</h2><p style="color:#6b7a8d;margin:4px 0 0;">${data.total} documents across ${data.gates.length} gates</p></div>
-                    <div style="display:flex;gap:8px;">
+                    <div style="display:flex;gap:8px;align-items:center;">
                         <button id="delete-selected-btn" style="display:none;background:rgba(255,68,68,0.1);border:1px solid #ff4444;color:#ff4444;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:12px;">Delete Selected (0)</button>
-                    </div>
-                </div>
-                <div class="gate-tabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-                    <button class="gate-tab active" data-gate="all" style="background:rgba(0,255,65,0.08);border:1px solid #00ff41;color:#00ff41;padding:6px 14px;border-radius:4px;cursor:pointer;font-size:12px;">All (${data.total})</button>
-                    ${data.gates.map(g => `<button class="gate-tab" data-gate="${g}" style="background:transparent;border:1px solid #1e2a3a;color:#6b7a8d;padding:6px 14px;border-radius:4px;cursor:pointer;font-size:12px;">${g} (${(data.by_gate[g] || []).length})</button>`).join('')}
-                </div>
-                <div id="doc-list">${renderGates(data.by_gate, gc)}</div>
-                <div style="margin-top:24px;padding:20px;border:1px dashed #1e2a3a;border-radius:8px;text-align:center;">
-                    <p style="color:#6b7a8d;font-size:13px;margin-bottom:8px;">Upload new documentation</p>
-                    <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;">
                         <select id="upload-gate" style="background:#131B26;border:1px solid #1e2a3a;color:#e8ecf0;padding:6px 12px;border-radius:4px;font-size:12px;">
                             <option value="SECURITY">Security</option>
                             <option value="ARCHITECTURE">Architecture</option>
@@ -37,8 +27,12 @@ export default {
                             <input type="file" accept=".md,.txt,.html" multiple style="display:none;" id="doc-upload-input">
                         </label>
                     </div>
-                    <p style="color:#556677;font-size:11px;margin-top:8px;">.md, .txt, .html supported. Files are chunked, embedded, and available for next PR review.</p>
                 </div>
+                <div class="gate-tabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+                    <button class="gate-tab active" data-gate="all" style="background:rgba(0,255,65,0.08);border:1px solid #00ff41;color:#00ff41;padding:6px 14px;border-radius:4px;cursor:pointer;font-size:12px;">All (${data.total})</button>
+                    ${data.gates.map(g => `<button class="gate-tab" data-gate="${g}" style="background:transparent;border:1px solid #1e2a3a;color:#6b7a8d;padding:6px 14px;border-radius:4px;cursor:pointer;font-size:12px;">${g} (${(data.by_gate[g] || []).length})</button>`).join('')}
+                </div>
+                <div id="doc-list">${renderGates(data.by_gate, gc)}</div>
             </div>`;
 
         // Gate filter tabs
@@ -119,6 +113,10 @@ export default {
                     const id = this.dataset.docId;
                     const content = document.getElementById('doc-content-' + id);
                     if (!content) return;
+
+                    // If click is inside the expanded content area, don't toggle
+                    if (content.contains(e.target)) return;
+
                     if (content.style.display === 'block') { content.style.display = 'none'; return; }
 
                     content.innerHTML = '<div style="padding:16px;color:#6b7a8d;">Loading...</div>';
