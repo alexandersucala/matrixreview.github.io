@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Security | MatrixReview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MatrixReview security practices, compliance posture, and data protection measures.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-bright: #00ff41;
+      --green-mid: #00cc33;
+      --green-dim: #00991a;
+      --border-green: rgba(0, 255, 65, 0.12);
+      --bg-black: #000;
+      --text-primary: #e0e0e0;
+      --text-secondary: #999;
+      --font-mono: 'Share Tech Mono', monospace;
+      --font-body: 'Outfit', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg-black);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      line-height: 1.8;
+    }
+    .topnav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(0,0,0,0.9); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-green); padding: 0 24px;
+    }
+    .topnav-inner {
+      max-width: 1100px; margin: 0 auto; display: flex;
+      align-items: center; justify-content: space-between; height: 64px;
+    }
+    .topnav-brand {
+      font-family: var(--font-mono); font-size: 1.1rem; color: var(--green-bright);
+      text-decoration: none; letter-spacing: 0.05em;
+    }
+    .topnav-links { display: flex; gap: 24px; }
+    .topnav-links a {
+      color: var(--text-secondary); text-decoration: none; font-size: 0.88rem;
+      font-weight: 500; transition: color 0.2s;
+    }
+    .topnav-links a:hover { color: var(--green-bright); }
+
+    main {
+      max-width: 780px; margin: 0 auto; padding: 120px 24px 80px;
+    }
+    h1 {
+      font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 8px;
+    }
+    .effective {
+      font-family: var(--font-mono); font-size: 0.85rem; color: var(--green-mid);
+      margin-bottom: 40px; display: block;
+    }
+    h2 {
+      font-size: 1.2rem; font-weight: 700; color: #fff; margin-top: 40px; margin-bottom: 12px;
+    }
+    h3 {
+      font-size: 1rem; font-weight: 600; color: #fff; margin-top: 24px; margin-bottom: 8px;
+    }
+    p { margin-bottom: 16px; }
+    ul { margin: 0 0 16px 20px; }
+    li { margin-bottom: 8px; }
+    strong { color: #fff; }
+    a { color: var(--green-bright); }
+
+    .control-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+      margin: 24px 0;
+    }
+    @media (max-width: 600px) { .control-grid { grid-template-columns: 1fr; } }
+    .control-card {
+      background: rgba(0, 255, 65, 0.03);
+      border: 1px solid var(--border-green);
+      border-radius: 8px; padding: 20px;
+    }
+    .control-card .check {
+      font-family: var(--font-mono); color: var(--green-bright);
+      font-size: 0.85rem; margin-bottom: 6px;
+    }
+    .control-card .label {
+      color: #fff; font-weight: 600; font-size: 0.95rem; margin-bottom: 4px;
+    }
+    .control-card .desc {
+      color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5;
+    }
+
+    .subprocessor-table {
+      width: 100%; border-collapse: collapse; margin: 16px 0;
+      font-size: 0.9rem;
+    }
+    .subprocessor-table th {
+      text-align: left; color: var(--green-mid); font-family: var(--font-mono);
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 8px 12px; border-bottom: 1px solid var(--border-green);
+    }
+    .subprocessor-table td {
+      padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: var(--text-primary);
+    }
+
+    .compliance-note {
+      background: rgba(0, 255, 65, 0.04);
+      border-left: 3px solid var(--green-mid);
+      padding: 20px 24px; margin: 32px 0; border-radius: 0 8px 8px 0;
+    }
+    .compliance-note p { margin-bottom: 8px; }
+    .compliance-note p:last-child { margin-bottom: 0; }
+
+    footer {
+      border-top: 1px solid var(--border-green); padding: 32px 24px; text-align: center;
+    }
+    .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+    .footer-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; }
+    .footer-links a:hover { color: var(--green-bright); }
+    .footer-copy {
+      font-family: var(--font-mono); font-size: 0.8rem; color: rgba(0,255,65,0.3);
+      margin-top: 12px;
+    }
+
+    #matrix-rain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.225;
+    }
+
+    main, .topnav, footer { position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
+
+<canvas id="matrix-rain"></canvas>
+
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="/" class="topnav-brand">MatrixReview</a>
+      <div class="topnav-links">
+        <a href="/">Home</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/security.html">Security</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <h1>Security</h1>
+    <span class="effective">Last updated: April 2026</span>
+
+    <p>MatrixReview reviews your pull requests against your own documentation, security policies, and style guides. We take the security of your code and data seriously. This page describes the technical and organizational controls we have in place.</p>
+
+    <h2>What We Access</h2>
+    <p>When you install MatrixReview on a GitHub repository, we access two things: your repository's documentation files (scanned once during setup) and pull request diffs (read each time a PR is opened or updated). We do not access your full source code, commit history, issues, wikis, or any other repository data beyond what is needed to perform the review.</p>
+
+    <h2>What We Store</h2>
+    <ul>
+      <li><strong>Documentation content</strong> you upload or that we scan from your repo. This powers the review knowledge base. You can view, edit, and delete documents at any time from the dashboard.</li>
+      <li><strong>Review findings</strong> including gate results, confidence labels, and traffic light outcomes. These are metadata about the review, not your source code.</li>
+      <li><strong>Dependency graph metadata</strong> showing file relationships, import chains, and security tags. This is structural data (file paths, line counts, import edges), not code content.</li>
+    </ul>
+
+    <h2>What We Do Not Store</h2>
+    <ul>
+      <li><strong>Your source code.</strong> Repository clones are created in temporary directories during graph building and deleted immediately after processing.</li>
+      <li><strong>PR diffs beyond 30 days.</strong> Diffs are retained temporarily for fix generation, then automatically purged from both disk and database.</li>
+      <li><strong>Credentials or tokens.</strong> GitHub installation tokens are short-lived (1 hour), generated via JWT, and never written to disk.</li>
+    </ul>
+
+    <h2>Security Controls</h2>
+
+    <div class="control-grid">
+      <div class="control-card">
+        <div class="check">[ACTIVE]</div>
+        <div class="label">Encryption at Rest</div>
+        <div class="desc">Database encrypted with SQLCipher (AES-256). Raw disk access yields unreadable data without the encryption key.</div>
+      </div>
+      <div class="control-card">
+        <div class="check">[ACTIVE]</div>
+        <div class="label">Encryption in Transit</div>
+        <div class="desc">All communications over HTTPS/TLS. No plaintext endpoints. API calls to LLM providers are encrypted.</div>
+      </div>
+      <div class="control-card">
+        <div class="check">[ACTIVE]</div>
+        <div class="label">Webhook Verification</div>
+        <div class="desc">All inbound GitHub webhooks are verified using HMAC SHA-256 signature validation before processing.</div>
+      </div>
+      <div class="control-card">
+        <div class="check">[ACTIVE]</div>
+        <div class="label">Audit Logging</div>
+        <div class="desc">Append-only audit trail records all data access, mutations, deletions, and exports with timestamps and actor identification.</div>
+      </div>
+      <div class="control-card">
+        <div class="check">[ACTIVE]</div>
+        <div class="label">Data Isolation</div>
+        <div class="desc">All database queries, API endpoints, and file storage are scoped by company identifier. No cross-tenant data access is possible.</div>
+      </div>
+      <div class="control-card">
+        <div class="check">[ACTIVE]</div>
+        <div class="label">Automatic Data Purge</div>
+        <div class="desc">PR diff data is automatically purged after 30 days. Review metadata (findings, scores) is retained for dashboard history.</div>
+      </div>
+      <div class="control-card">
+        <div class="check">[ACTIVE]</div>
+        <div class="label">Data Deletion on Request</div>
+        <div class="desc">Full GDPR-compliant data deletion. All documents, reviews, findings, embeddings, and graph data can be permanently erased on request.</div>
+      </div>
+      <div class="control-card">
+        <div class="check">[ACTIVE]</div>
+        <div class="label">Data Export</div>
+        <div class="desc">Complete data portability. Export all your documents, reviews, and findings in a standard JSON format at any time.</div>
+      </div>
+    </div>
+
+    <h2>Infrastructure</h2>
+    <p>MatrixReview runs on Railway (United States, us-west1). The application runs in isolated containers with no shared resources between customers. The persistent volume storing the encrypted database is not accessible from the public internet. There are no open ports beyond the application's HTTPS endpoint. SSH access is limited to the founder via Railway's authenticated CLI.</p>
+
+    <h2>AI and LLM Processing</h2>
+    <p>PR diffs and document chunks are sent to AI providers for analysis during the review process. These transmissions occur over HTTPS. The AI providers do not store your data beyond the duration of the API call per their respective terms of service.</p>
+    <ul>
+      <li><strong>DeepSeek</strong> processes PR diff excerpts and document chunks during review (Pass 1 and Pass 2).</li>
+      <li><strong>Anthropic</strong> processes documents during classification and setup.</li>
+    </ul>
+    <p>Your source code is never sent to any AI provider. Only PR diff excerpts and relevant documentation chunks are transmitted.</p>
+
+    <h2>Subprocessors</h2>
+    <p>The following third-party services process data on behalf of MatrixReview customers.</p>
+
+    <table class="subprocessor-table">
+      <thead>
+        <tr><th>Provider</th><th>Purpose</th><th>Data</th><th>Location</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Railway</td><td>Hosting, compute, storage</td><td>Encrypted database, graph metadata</td><td>US</td></tr>
+        <tr><td>GitHub</td><td>Webhooks, PR comments, OAuth</td><td>Repository metadata, PR diffs (transient)</td><td>US</td></tr>
+        <tr><td>DeepSeek</td><td>LLM inference for PR review</td><td>PR diff excerpts (transient)</td><td>China</td></tr>
+        <tr><td>Anthropic</td><td>Document classification</td><td>Document content during setup</td><td>US</td></tr>
+        <tr><td>GitHub Pages</td><td>Static website hosting</td><td>No customer data</td><td>US (CDN)</td></tr>
+      </tbody>
+    </table>
+
+    <p>We will notify customers at least 30 days before adding a new subprocessor that handles customer data.</p>
+
+    <h2>GDPR</h2>
+    <p>MatrixReview is committed to GDPR compliance. We maintain the following:</p>
+    <ul>
+      <li><strong>Right to erasure:</strong> Full data deletion endpoint wipes all documents, reviews, findings, embeddings, graph data, and user records.</li>
+      <li><strong>Right to portability:</strong> Data export endpoint provides a complete JSON dump of all your data.</li>
+      <li><strong>Records of processing:</strong> Documented per GDPR Article 30, covering all processing activities with legal basis, recipients, and retention periods.</li>
+      <li><strong>Data Processing Agreement:</strong> Available on request for customers requiring a formal DPA.</li>
+      <li><strong>Breach notification:</strong> Incident response plan with 72-hour notification commitment per Article 33.</li>
+      <li><strong>Data minimization:</strong> We store only what is necessary to provide the service. Source code is never persisted. PR diffs are purged after 30 days.</li>
+    </ul>
+
+    <h2>SOC 2</h2>
+    <p>MatrixReview has implemented all technical and organizational controls required for SOC 2 Type I certification under the Security Trust Services Criterion:</p>
+    <ul>
+      <li><strong>Risk assessment:</strong> Formal risk register with 10 identified risks, controls, and residual risk ratings. Reviewed quarterly.</li>
+      <li><strong>Incident response:</strong> Documented plan with severity levels, response phases, evidence preservation, and post-mortem procedures.</li>
+      <li><strong>Access control:</strong> Principle of least privilege. Infrastructure access limited to the founder. All secrets in encrypted environment variables, never in code.</li>
+      <li><strong>Encryption:</strong> AES-256 at rest (SQLCipher), TLS in transit.</li>
+      <li><strong>Audit trail:</strong> Append-only log of all data operations.</li>
+      <li><strong>Change management:</strong> All changes deployed through Git with full commit history. No manual production modifications.</li>
+      <li><strong>Data retention:</strong> Automated 30-day purge of sensitive data. Indefinite retention of non-sensitive review metadata.</li>
+    </ul>
+
+    <div class="compliance-note">
+      <p><strong>A note on certification.</strong></p>
+      <p>MatrixReview is a bootstrapped, founder-funded startup. We have implemented every technical and organizational control that SOC 2 and GDPR require. We maintain formal risk assessments, incident response plans, data processing agreements, and complete records of processing activities.</p>
+      <p>We have not yet undergone a formal SOC 2 audit ($20,000-50,000+) because we are pre-revenue. Formal certification will be pursued as the company scales. In the meantime, we are happy to walk through our controls, share our security documentation, and answer any questions about how we protect your data.</p>
+      <p>Contact <a href="mailto:admin@matrixreview.io">admin@matrixreview.io</a> for security documentation, our DPA, or to schedule a security review call.</p>
+    </div>
+
+    <h2>Responsible Disclosure</h2>
+    <p>If you discover a security vulnerability in MatrixReview, please report it to <a href="mailto:admin@matrixreview.io">admin@matrixreview.io</a>. We ask that you give us reasonable time to address the issue before public disclosure.</p>
+
+    <h2>Contact</h2>
+    <p>For security questions, data deletion requests, DPA inquiries, or to report a vulnerability: <a href="mailto:admin@matrixreview.io">admin@matrixreview.io</a></p>
+
+  </main>
+
+  <footer>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/security.html">Security</a>
+      <a href="mailto:admin@matrixreview.io">Contact</a>
+    </div>
+    <p class="footer-copy">&copy; <script>document.write(new Date().getFullYear())</script> MatrixReview</p>
+  </footer>
+
+<script>
+(function() {
+  const canvas = document.getElementById('matrix-rain');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const fontSize = 14;
+  const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ{}[]<>/\\|=+-*&^%$#@!';
+  const columns = Math.floor(canvas.width / fontSize);
+  const drops = new Array(columns).fill(1);
+
+  for (let i = 0; i < drops.length; i++) {
+    drops[i] = Math.random() * -100;
+  }
+
+  function draw() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#00ff41';
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+      if (drops[i] < 0) {
+        drops[i]++;
+        continue;
+      }
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+
+      ctx.fillStyle = Math.random() > 0.95 ? '#ffffff' : '#00ff41';
+      ctx.fillText(char, x, y);
+      ctx.fillStyle = '#00ff41';
+
+      if (y > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  setInterval(draw, 45);
+})();
+</script>
+
+</body>
+</html>
