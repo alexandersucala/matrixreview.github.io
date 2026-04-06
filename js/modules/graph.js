@@ -80,8 +80,8 @@ function renderHotspots(files) {
                 <span class="graph-file-path">${f.path}</span>
             </div>
             <div class="graph-file-stats">
-                <span class="stat-pill fan-in">↓ ${f.fan_in}</span>
-                <span class="stat-pill fan-out">↑ ${f.fan_out}</span>
+                <span class="stat-pill fan-in">\u2193 ${f.fan_in}</span>
+                <span class="stat-pill fan-out">\u2191 ${f.fan_out}</span>
                 ${f.is_entry_point ? '<span class="stat-pill entry">EP</span>' : ''}
                 ${f.security_tags?.length ? `<span class="stat-pill security">${f.security_tags.length} tags</span>` : ''}
             </div>
@@ -98,7 +98,7 @@ function renderEntryPoints(files) {
                 <span class="graph-file-path">${f.path}</span>
             </div>
             <div class="graph-file-stats">
-                <span class="stat-pill fan-in">↓ ${f.fan_in}</span>
+                <span class="stat-pill fan-in">\u2193 ${f.fan_in}</span>
                 <span class="stat-pill">${f.language}</span>
                 ${f.security_tags?.length ? `<span class="stat-pill security">${f.security_tags.length} tags</span>` : ''}
             </div>
@@ -116,7 +116,7 @@ function renderSecurityFiles(files) {
             </div>
             <div class="graph-file-stats">
                 <span class="stat-pill risk">Risk: ${f.risk_score}</span>
-                <span class="stat-pill fan-in">↓ ${f.fan_in}</span>
+                <span class="stat-pill fan-in">\u2193 ${f.fan_in}</span>
                 <span class="stat-pill security">${f.security_tags.join(', ')}</span>
             </div>
         </div>
@@ -127,11 +127,16 @@ function renderSecurityFiles(files) {
 async function renderFileDetail(container, ctx) {
     const file = await ctx.api.getGraphFile(ctx.slug, ctx.subId);
 
+    const githubUrl = file.github_repo
+        ? `https://github.com/${file.github_repo}/blob/${file.branch || 'main'}/${file.path}`
+        : '';
+
     container.innerHTML = `
         <div class="file-detail">
-            <button class="back-btn" onclick="location.hash='graph'">← Back to Graph</button>
+            <button class="back-btn" onclick="location.hash='graph'">\u2190 Back to Graph</button>
             <h2>${file.path.split('/').pop()}</h2>
             <p class="file-path">${file.path}</p>
+            ${githubUrl ? `<a href="${githubUrl}" target="_blank" rel="noopener" class="github-link">\u2197 View on GitHub</a>` : ''}
 
             <div class="file-stats-grid">
                 <div class="file-stat"><span class="value">${file.language}</span><span class="label">Language</span></div>
