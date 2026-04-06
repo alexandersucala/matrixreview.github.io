@@ -688,6 +688,7 @@
         <a href="#video-demo">Demo Video</a>
         <a href="#fix-demo">Fix Generation</a>
         <a href="#how-it-works">How It Works</a>
+        <a href="#security">Security</a>
         <a href="support.html">Support</a>
         <a href="security.html">Security</a>
         <a href="https://github.com/apps/matrixreview" class="topnav-cta" onclick="rdt('track','Lead')">Install Free &rarr;</a>
@@ -1431,6 +1432,44 @@ import { rateLimiter } from '@/middleware/rateLimit';
       setTimeout(function() { result.style.opacity = '1'; result.style.transform = 'translateY(0)'; }, 50);
     }
   </script>
+
+  <!-- ═══════════════ SECURITY ═══════════════ -->
+  <section id="security">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-eyebrow">// Security Posture</p>
+        <h2 class="section-title">Your code never touches our disk.</h2>
+        <p class="section-subtitle">MatrixReview is built for teams that care about where their code goes. Here's what we enforce.</p>
+      </div>
+
+      <div class="diff-grid reveal">
+        <div class="diff-card">
+          <h3>No Source Code Storage</h3>
+          <p>Repository clones exist in temporary directories during graph analysis and are deleted immediately. Your source code is never written to our database.</p>
+        </div>
+        <div class="diff-card">
+          <h3>Encrypted at Rest</h3>
+          <p>All stored data (documents, findings, graph metadata) is encrypted with AES-256 via SQLCipher. Raw disk access yields unreadable data.</p>
+        </div>
+        <div class="diff-card">
+          <h3>30-Day Diff Purge</h3>
+          <p>PR diffs are retained temporarily for fix generation, then automatically purged from both disk and database. Review metadata (findings, scores) persists for your dashboard.</p>
+        </div>
+        <div class="diff-card">
+          <h3>Full Data Control</h3>
+          <p>Export all your data in portable JSON. Delete everything with one API call. GDPR-compliant data deletion wipes documents, reviews, findings, embeddings, and graph data permanently.</p>
+        </div>
+        <div class="diff-card">
+          <h3>Audit Trail</h3>
+          <p>Every data access and mutation is logged in an append-only audit trail. Who accessed what, when, from where. Immutable and never deleted.</p>
+        </div>
+        <div class="diff-card">
+          <h3>SOC 2 and GDPR Controls</h3>
+          <p>Formal risk assessments, incident response plan, data processing agreements, and records of processing activities. All technical and organizational controls implemented. <a href="/security.html" style="color:var(--green-bright);">Full details.</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- ═══════════════ CTA ═══════════════ -->
   <section class="cta-section">
