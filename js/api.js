@@ -50,6 +50,19 @@ export const api = {
     // Docs
     getDocs: (slug, gate = null) => request(`/${slug}/docs${gate ? `?gate=${gate}` : ''}`),
     getDoc: (slug, docId) => request(`/${slug}/docs/${docId}`),
+    classifyDoc: async (slug, file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const resp = await fetch(`${API_BASE}/${slug}/docs/classify`, {
+            method: 'POST',
+            body: formData,
+        });
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+            throw new Error(err.detail || `Classify failed: ${resp.status}`);
+        }
+        return await resp.json();
+    },
     updateDoc: (slug, docId, content) => request(`/${slug}/docs/${docId}`, {
         method: 'PUT',
         body: JSON.stringify({ content }),

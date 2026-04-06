@@ -15,15 +15,8 @@ export default {
                     <div><h2 style="color:#e8ecf0;margin:0;">Document Inventory</h2><p style="color:#6b7a8d;margin:4px 0 0;">${data.total} documents across ${data.gates.length} gates</p></div>
                     <div style="display:flex;gap:8px;align-items:center;">
                         <button id="delete-selected-btn" style="display:none;background:rgba(255,68,68,0.1);border:1px solid #ff4444;color:#ff4444;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:12px;">Delete Selected (0)</button>
-                        <select id="upload-gate" style="background:#131B26;border:1px solid #1e2a3a;color:#e8ecf0;padding:6px 12px;border-radius:4px;font-size:12px;">
-                            <option value="SECURITY">Security</option>
-                            <option value="ARCHITECTURE">Architecture</option>
-                            <option value="STYLE">Style</option>
-                            <option value="ONBOARDING">Onboarding</option>
-                            <option value="LEGAL">Legal</option>
-                        </select>
                         <label style="display:inline-block;background:rgba(0,255,65,0.1);color:#00ff41;border:1px solid #00ff41;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:12px;">
-                            Upload File
+                            Upload Document
                             <input type="file" accept=".md,.txt,.html" multiple style="display:none;" id="doc-upload-input">
                         </label>
                     </div>
@@ -46,28 +39,109 @@ export default {
             });
         });
 
-        // Upload handler
+        // Upload handler - classify first, then confirm
         document.getElementById('doc-upload-input')?.addEventListener('change', async function() {
-            const gate = document.getElementById('upload-gate').value;
-            let uploaded = 0;
-            let failed = 0;
+            if (!this.files.length) return;
+
+            // Show classification panel
+            const panel = document.createElement('div');
+            panel.id = 'upload-review-panel';
+            panel.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;';
+            panel.innerHTML = '<div style="background:#0d1117;border:1px solid #30363d;border-radius:12px;padding:32px;max-width:700px;width:95%;max-height:85vh;overflow-y:auto;">' +
+                '<h3 style="color:#f0f6fc;font-size:18px;margin-bottom:16px;">Classifying documents...</h3>' +
+                '<div id="upload-classify-results" style="color:#8b949e;font-size:13px;">Analyzing files...</div>' +
+                '</div>';
+            document.body.appendChild(panel);
+            panel.addEventListener('click', (e) => { if (e.target === panel) panel.remove(); });
+
+            const resultsEl = document.getElementById('upload-classify-results');
+            const pendingDocs = [];
+
             for (const file of this.files) {
                 try {
-                    const result = await ctx.api.uploadDoc(ctx.slug, file, gate);
-                    uploaded++;
+                    resultsEl.innerHTML += `<div style="color:#58a6ff;margin:8px 0;">Classifying ${esc(file.name)}...</div>`;
+                    const cls = await ctx.api.classifyDoc(ctx.slug, file);
+                    const allGates = ['SECURITY','ARCHITECTURE','STYLE','ONBOARDING','LEGAL'];
+                    const badgeColor = cls.confidence >= 90 ? '#3fb950' : cls.confidence >= 70 ? '#d29922' : '#f85149';
+
+                    pendingDocs.push({ file, classification: cls });
+
+                    let sectionsHtml = '';
+                    if (cls.decomposed_sections?.length) {
+                        sectionsHtml = '<div style="margin-top:8px;border-left:3px solid #58a6ff;padding-left:12px;">' +
+                            '<div style="font-size:11px;color:#58a6ff;text-transform:uppercase;margin-bottom:4px;">Extracted sections</div>' +
+                            cls.decomposed_sections.map((s, si) => `
+                                <div style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:10px;margin-bottom:6px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <span style="color:#f0f6fc;font-size:13px;">${esc(s.title)}</span>
+                                        <div style="display:flex;gap:6px;align-items:center;">
+                                            <select class="section-gate-select" data-file-idx="${pendingDocs.length-1}" data-section-idx="${si}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:3px 6px;border-radius:4px;font-size:11px;">
+                                                ${allGates.map(g => `<option value="${g}" ${g===s.gate?'selected':''}>${g}</option>`).join('')}
+                                            </select>
+                                            <span style="font-size:11px;color:${s.confidence >= 85 ? '#3fb950' : '#d29922'};">${s.confidence}%</span>
+                                        </div>
+                                    </div>
+                                    <div style="font-size:11px;color:#8b949e;margin-top:4px;">Lines ${s.start_line}-${s.end_line}</div>
+                                </div>
+                            `).join('') + '</div>';
+                    }
+
+                    resultsEl.innerHTML = `
+                        ${resultsEl.innerHTML.replace(/Classifying.*?\.\.\.<\/div>$/s, '')}
+                        <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:12px;" id="upload-card-${pendingDocs.length-1}">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                                <span style="color:#f0f6fc;font-size:14px;font-weight:600;">${esc(cls.filename)}</span>
+                                <div style="display:flex;gap:8px;align-items:center;">
+                                    <select class="file-gate-select" data-file-idx="${pendingDocs.length-1}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:4px;font-size:12px;">
+                                        ${allGates.map(g => `<option value="${g}" ${g===cls.gate?'selected':''}>${g}</option>`).join('')}
+                                    </select>
+                                    <span style="font-size:12px;padding:3px 8px;border-radius:12px;border:1px solid ${badgeColor}33;color:${badgeColor};background:${badgeColor}1a;">${cls.confidence}%</span>
+                                </div>
+                            </div>
+                            <div style="font-size:12px;color:#8b949e;margin-bottom:8px;">${esc(cls.reason)}</div>
+                            <div style="font-size:11px;color:#6b7a8d;">${(cls.content_length/1024).toFixed(1)}KB</div>
+                            ${sectionsHtml}
+                        </div>
+                    `;
                 } catch (e) {
-                    failed++;
-                    console.error('Upload failed:', file.name, e);
+                    resultsEl.innerHTML += `<div style="color:#f85149;margin:8px 0;">Failed to classify ${esc(file.name)}: ${esc(e.message)}</div>`;
                 }
             }
-            if (uploaded > 0) {
-                alert(`Uploaded ${uploaded} file(s)${failed > 0 ? `, ${failed} failed` : ''}. Documents chunked and ready for PR reviews.`);
-                // Reload docs module
-                if (ctx.orchestrator?.loadModule) ctx.orchestrator.loadModule('docs');
-                else location.reload();
-            } else if (failed > 0) {
-                alert(`All uploads failed. Check file format.`);
+
+            if (pendingDocs.length > 0) {
+                resultsEl.innerHTML += `
+                    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px;">
+                        <button id="upload-cancel-btn" style="background:#21262d;border:1px solid #363b42;color:#c9d1d9;padding:10px 20px;border-radius:6px;cursor:pointer;font-size:14px;">Cancel</button>
+                        <button id="upload-confirm-btn" style="background:#238636;border:1px solid #238636;color:#fff;padding:10px 20px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;">Confirm & Ingest ${pendingDocs.length} Document(s)</button>
+                    </div>
+                `;
+
+                document.getElementById('upload-cancel-btn').addEventListener('click', () => panel.remove());
+                document.getElementById('upload-confirm-btn').addEventListener('click', async () => {
+                    const btn = document.getElementById('upload-confirm-btn');
+                    btn.textContent = 'Ingesting...'; btn.disabled = true;
+                    let ingested = 0;
+                    let failed = 0;
+                    for (let i = 0; i < pendingDocs.length; i++) {
+                        const pd = pendingDocs[i];
+                        const gateSelect = panel.querySelector(`.file-gate-select[data-file-idx="${i}"]`);
+                        const gate = gateSelect ? gateSelect.value : pd.classification.gate;
+                        try {
+                            await ctx.api.uploadDoc(ctx.slug, pd.file, gate);
+                            ingested++;
+                        } catch (e) {
+                            failed++;
+                        }
+                    }
+                    panel.remove();
+                    alert(`Ingested ${ingested} document(s)${failed > 0 ? `, ${failed} failed` : ''}. Chunked, embedded, ready for PR reviews.`);
+                    if (ctx.orchestrator?.loadModule) ctx.orchestrator.loadModule('docs');
+                    else location.reload();
+                });
             }
+
+            // Reset file input
+            this.value = '';
         });
 
         // Delete selected handler
