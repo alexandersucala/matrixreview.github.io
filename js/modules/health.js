@@ -68,7 +68,7 @@ export default {
         }
 
         container.innerHTML = '<div class="h-wrap" id="health-root"><div style="color:#6b7a8d;padding:40px;text-align:center;">Loading...</div></div>';
-        await window.loadHealth();
+        await loadHealth();
     },
     destroy() {
         delete window._healthCtx;
@@ -84,7 +84,8 @@ export default {
         delete window.hlBar;
     }
 };
-window.loadHealth = async function() {
+window.loadHealth = loadHealth;
+async function loadHealth() {
     const ctx = window._healthCtx;
     const page = window._healthPage;
     const perPage = window._healthPerPage;
@@ -265,7 +266,8 @@ function getGrade(s) {
     return { letter: 'F', color: '#ff4444' };
 }
 
-window.hFilter = function(f, btn) {
+window.hFilter = hFilter;
+function hFilter(f, btn) {
     window._healthFilter = f;
     const reviews = window._healthReviews || [];
     document.querySelectorAll('.h-fbtn').forEach(b => b.classList.remove('active'));
@@ -274,13 +276,15 @@ window.hFilter = function(f, btn) {
     document.getElementById('h-pr-list').innerHTML = renderPRList(filtered);
 };
 
-window.hHighlight = function(idx) {
+window.hHighlight = hHighlight;
+function hHighlight(idx) {
     document.querySelectorAll('.h-pr-row').forEach(r => r.classList.remove('hl'));
     const row = document.getElementById('h-row-' + idx);
     if (row) { row.classList.add('hl'); row.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 };
 
-window.hToggle = function(id) {
+window.hToggle = hToggle;
+function hToggle(id) {
     const d = document.getElementById('h-det-' + id);
     if (!d) return;
     if (d.style.display === 'none') {
@@ -289,19 +293,22 @@ window.hToggle = function(id) {
     } else { d.style.display = 'none'; }
 };
 
-window.hPerPage = function(v) {
+window.hPerPage = hPerPage;
+function hPerPage(v) {
     window._healthPerPage = parseInt(v) || 50;
     window._healthPage = 1;
     loadHealth();
 };
 
-window.hAuthor = function(v) {
+window.hAuthor = hAuthor;
+function hAuthor(v) {
     window._healthAuthor = v;
     window._healthPage = 1;
     loadHealth();
 };
 
-window.hPage = function(p) {
+window.hPage = hPage;
+function hPage(p) {
     if (p < 1 || p > (window._healthPages || 1)) return;
     window._healthPage = p;
     loadHealth();
