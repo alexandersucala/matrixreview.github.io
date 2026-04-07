@@ -1,6 +1,7 @@
 /**
- * MatrixReview Dashboard — Health Module v6
- * Full width. Adjustable review window. Contributor filter. Pagination.
+ * MatrixReview Dashboard — Health Module v7
+ * Fixed: loadHealth scoping. Full width. Adjustable review window.
+ * Contributor filter. Pagination.
  * Save to: C:\Matrixreview.io\js\modules\health.js
  */
 export default {
@@ -67,7 +68,7 @@ export default {
         }
 
         container.innerHTML = '<div class="h-wrap" id="health-root"><div style="color:#6b7a8d;padding:40px;text-align:center;">Loading...</div></div>';
-        await loadHealth();
+        await window.loadHealth();
     },
     destroy() {
         delete window._healthCtx;
@@ -79,17 +80,10 @@ export default {
         delete window._healthTotal;
         delete window._healthPages;
         delete window.loadHealth;
-        delete window.hFilter;
-        delete window.hAuthor;
-        delete window.hPerPage;
-        delete window.hPage;
-        delete window.hHighlight;
-        delete window.hToggle;
-        const s = document.getElementById('health-v6-css');
-        if (s) s.remove();
+        delete window.togglePR;
+        delete window.hlBar;
     }
 };
-
 window.loadHealth = async function() {
     const ctx = window._healthCtx;
     const page = window._healthPage;

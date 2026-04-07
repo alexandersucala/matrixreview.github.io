@@ -43,7 +43,6 @@ export async function init() {
 }
 
 async function navigateTo(viewName) {
-    // Prevent concurrent navigation (fixes blank page on fast clicks)
     if (isNavigating) return;
     isNavigating = true;
 
@@ -65,7 +64,6 @@ async function navigateTo(viewName) {
 
     container.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p>Loading...</p></div>';
 
-    // Update nav active state
     document.querySelectorAll('.nav-link').forEach(el => {
         el.classList.toggle('active', el.dataset.view === view);
     });
@@ -78,16 +76,13 @@ async function navigateTo(viewName) {
 
         currentModule = modules[view];
 
-        // Build context with orchestrator reference
         const ctx = {
             slug: currentSlug,
             api: api,
             subId: subId || null,
             navigateTo: (v) => { window.location.hash = v; },
             orchestrator: {
-                loadModule: (name) => {
-                    window.location.hash = name;
-                },
+                loadModule: (name) => { window.location.hash = name; },
             },
         };
 
@@ -95,10 +90,10 @@ async function navigateTo(viewName) {
 
     } catch (e) {
         console.error(`Failed to load view: ${view}`, e);
-        container.innerHTML = `<div class="error-state"><h3>Failed to load</h3><p>${e.message}</p><button onclick="location.reload()" style="margin-top:12px;padding:8px 16px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);border-radius:6px;cursor:pointer;">Reload</button></div>`;
+        container.innerHTML = `<div class="error-state"><h3>Failed to load</h3><p>${e.message || 'Unknown error'}</p><button onclick="location.hash='';location.hash='${view}'" style="margin-top:12px;padding:8px 16px;background:rgba(0,255,65,0.1);color:#00ff41;border:1px solid #00ff41;border-radius:6px;cursor:pointer;">Retry</button> <button onclick="location.reload()" style="margin-top:12px;padding:8px 16px;background:rgba(0,255,65,0.1);color:#00ff41;border:1px solid #00ff41;border-radius:6px;cursor:pointer;">Reload Page</button></div>`;
+    } finally {
+        isNavigating = false;
     }
-
-    isNavigating = false;
 }
 
 async function showCompanyPicker() {
