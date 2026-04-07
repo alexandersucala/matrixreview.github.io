@@ -64,7 +64,7 @@ async function renderGraphOverview(container, ctx) {
         const s = document.createElement('style');
         s.id = 'graph-extra-css';
         s.textContent = `
-            .lang-clickable { cursor:pointer; transition:all 0.15s; }
+            .lang-chip { white-space:nowrap; } .graph-langs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; } .lang-clickable { cursor:pointer; transition:all 0.15s; }
             .lang-clickable:hover { border-color:var(--accent); }
             .lang-clickable.active { border-color:var(--accent); background:var(--accent-dim); }
             .github-link { display:inline-block; color:#00ff41; font-family:'JetBrains Mono',monospace; font-size:13px; text-decoration:none; margin-top:8px; padding:6px 12px; border:1px solid rgba(0,255,65,0.3); border-radius:6px; transition:background 0.2s; }
