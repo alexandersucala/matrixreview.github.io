@@ -30,7 +30,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Outfit', sans-serif;
-            background: transparent;
+            background: var(--bg);
             color: var(--text);
             min-height: 100vh;
         }
@@ -45,6 +45,7 @@
             height: 100%;
             z-index: 0;
             pointer-events: none;
+            opacity: 0.15;
         }
         .dash-shell {
             position: relative;
@@ -432,9 +433,9 @@
         const columns = Math.floor(canvas.width / fontSize);
         const drops = Array(columns).fill(1);
         function drawMatrix() {
-            ctx.fillStyle = 'rgba(10,14,20,0.05)';
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'rgba(0,255,65,0.3)';
+            ctx.fillStyle = '#00ff41';
             ctx.font = fontSize + 'px monospace';
             for (let i = 0; i < drops.length; i++) {
                 ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, drops[i] * fontSize);
