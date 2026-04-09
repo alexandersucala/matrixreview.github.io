@@ -36,7 +36,20 @@
         }
 
         /* ── Layout ── */
+        /* ── Matrix Rain Background ── */
+        #matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.15;
+        }
         .dash-shell {
+            position: relative;
+            z-index: 1;
             display: grid;
             grid-template-columns: 64px 1fr;
             min-height: 100vh;
@@ -392,6 +405,7 @@
     </style>
 </head>
 <body>
+    <canvas id="matrix-rain"></canvas>
     <div class="dash-shell">
         <nav class="dash-sidebar">
             <div class="dash-logo" onclick="window.location='dashboard.html'"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style="width:28px;height:28px;"><rect width="32" height="32" rx="6" fill="#000" stroke="#1e2a3a" stroke-width="1"/><text x="16" y="23" font-family="monospace" font-size="22" font-weight="bold" fill="#00ff41" text-anchor="middle">M</text></svg></div>
@@ -409,6 +423,29 @@
         </main>
     </div>
 
+    <script>
+        const canvas = document.getElementById('matrix-rain');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = 'アイウエオカキクケコサシスセソタチツテト0123456789ABCDEF';
+        const fontSize = 14;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+            for (let i = 0; i < drops.length; i++) {
+                ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    </script>
     <script type="module">
         import { api } from './js/api.js';
 
