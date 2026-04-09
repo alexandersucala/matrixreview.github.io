@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In | MatrixReview</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-bright: #00ff41;
+      --bg-black: #000;
+      --bg-card: #0a0a0a;
+      --border-green: rgba(0, 255, 65, 0.12);
+      --text-primary: #e0e0e0;
+      --text-muted: #888;
+      --font-mono: 'Share Tech Mono', monospace;
+      --font-body: 'Outfit', sans-serif;
+    }
+    body {
+      background: var(--bg-black);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #matrix-rain {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none; opacity: 0.15;
+    }
+    .login-container {
+      position: relative; z-index: 1;
+      text-align: center; max-width: 420px; padding: 0 24px;
+    }
+    .login-logo {
+      font-family: var(--font-mono); font-size: 32px;
+      color: var(--green-bright); text-decoration: none;
+      display: block; margin-bottom: 48px; letter-spacing: 2px;
+    }
+    .login-card {
+      background: var(--bg-card); border: 1px solid var(--border-green);
+      border-radius: 12px; padding: 48px 40px;
+    }
+    .login-card h1 { font-size: 24px; font-weight: 600; color: #fff; margin-bottom: 12px; }
+    .login-card p { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 32px; }
+    .github-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: #fff; color: #000; font-family: var(--font-body);
+      font-size: 16px; font-weight: 600; padding: 14px 32px;
+      border: none; border-radius: 8px; cursor: pointer;
+      text-decoration: none; transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .github-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,255,65,0.15); }
+    .github-btn svg { width: 24px; height: 24px; }
+    .login-footer { margin-top: 24px; font-size: 13px; color: var(--text-muted); }
+    .login-footer a { color: var(--green-bright); text-decoration: none; }
+    .login-footer a:hover { text-decoration: underline; }
+    .error-msg {
+      background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3);
+      color: #ff6666; padding: 12px 16px; border-radius: 8px;
+      font-size: 14px; margin-bottom: 24px; display: none;
+    }
+    .no-repos-msg {
+      display: none; background: rgba(255,204,0,0.08);
+      border: 1px solid rgba(255,204,0,0.2); color: #ffcc00;
+      padding: 16px; border-radius: 8px; font-size: 13px;
+      line-height: 1.6; margin-bottom: 24px; text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix-rain"></canvas>
+  <div class="login-container">
+    <a href="/" class="login-logo">MatrixReview</a>
+    <div class="login-card">
+      <div class="error-msg" id="error-msg"></div>
+      <div class="no-repos-msg" id="no-repos-msg">
+        <strong>No matching repositories found.</strong><br><br>
+        Your GitHub account doesn't have access to any repositories with MatrixReview installed.
+        <a href="https://github.com/apps/matrixreview" target="_blank">Install MatrixReview</a> on a repository first, then sign in again.
+      </div>
+      <h1>Sign in to your dashboard</h1>
+      <p>View reviews, manage documents, and monitor code health across your repositories.</p>
+      <a href="https://codereview-ai-production.up.railway.app/auth/login" class="github-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        Sign in with GitHub
+      </a>
+      <div class="login-footer"><a href="/">Back to MatrixReview</a></div>
+    </div>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    if (error === 'no_repos') {
+      document.getElementById('no-repos-msg').style.display = 'block';
+    } else if (error) {
+      const el = document.getElementById('error-msg');
+      el.textContent = 'Authentication failed. Please try again.';
+      el.style.display = 'block';
+    }
+    if (sessionStorage.getItem('mr_token')) { window.location.href = '/dashboard.html'; }
+
+    const canvas = document.getElementById('matrix-rain');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const chars = 'アイウエオカキクケコサシスセソタチツテト0123456789';
+    const fontSize = 14;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(1);
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0,0,0,0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ff41';
+      ctx.font = fontSize + 'px monospace';
+      for (let i = 0; i < drops.length; i++) {
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }
+    setInterval(drawMatrix, 50);
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+  </script>
+</body>
+</html>

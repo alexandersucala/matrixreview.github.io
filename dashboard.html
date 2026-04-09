@@ -361,6 +361,34 @@
             .finding-row { grid-template-columns: 28px 1fr; }
             .finding-file, .finding-category, .finding-line { display: none; }
         }
+        /* ── User Avatar ── */
+        .dash-user {
+            margin-top: auto;
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .dash-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: border-color 0.15s;
+        }
+        .dash-avatar:hover { border-color: var(--accent); }
+        .dash-signout {
+            font-size: 10px;
+            color: var(--text-dim);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: 'Outfit', sans-serif;
+            transition: color 0.15s;
+        }
+        .dash-signout:hover { color: var(--red); }
     </style>
 </head>
 <body>
@@ -368,6 +396,10 @@
         <nav class="dash-sidebar">
             <div class="dash-logo" onclick="window.location='dashboard.html'"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style="width:28px;height:28px;"><rect width="32" height="32" rx="6" fill="#000" stroke="#1e2a3a" stroke-width="1"/><text x="16" y="23" font-family="monospace" font-size="22" font-weight="bold" fill="#00ff41" text-anchor="middle">M</text></svg></div>
             <div id="dash-nav"></div>
+            <div class="dash-user" id="dash-user" style="display:none;">
+                <img class="dash-avatar" id="dash-avatar" src="" alt="User" title="Signed in">
+                <button class="dash-signout" id="dash-signout">Sign out</button>
+            </div>
         </nav>
         <main class="dash-main" id="dash-content">
             <div class="loading-state">
@@ -378,8 +410,38 @@
     </div>
 
     <script type="module">
-        import { init } from './js/orchestrator.js';
-        init();
+        import { api } from './js/api.js';
+
+        // 1. Check for OAuth callback token in URL hash
+        if (window.location.hash.startsWith('#token=')) {
+            const token = window.location.hash.substring(7);
+            sessionStorage.setItem('mr_token', token);
+            history.replaceState(null, '', '/dashboard.html');
+        }
+
+        // 2. Redirect to login if no token
+        if (!sessionStorage.getItem('mr_token')) {
+            window.location.href = '/login.html';
+        } else {
+            // 3. Load user info and show avatar
+            try {
+                const user = await api.getMe();
+                if (user) {
+                    const el = document.getElementById('dash-user');
+                    const avatar = document.getElementById('dash-avatar');
+                    el.style.display = 'flex';
+                    avatar.src = user.github_avatar || '';
+                    avatar.title = user.github_user || 'Signed in';
+                    document.getElementById('dash-signout').addEventListener('click', () => api.signOut());
+                }
+            } catch (e) {
+                console.warn('Auth check failed:', e);
+            }
+
+            // 4. Initialize dashboard
+            const { init } = await import('./js/orchestrator.js');
+            init();
+        }
     </script>
 </body>
 </html>

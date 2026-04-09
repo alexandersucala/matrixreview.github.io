@@ -4,13 +4,33 @@
  * Single source of truth for all backend API calls.
  * Every module imports this instead of making raw fetch calls.
  * Includes TTL cache for expensive read endpoints.
+ * Auth token attached to every request. 401 redirects to login.
  * 
  * Save to: C:\Matrixreview.io\js\api.js
  */
 
 const API_BASE = 'https://codereview-ai-production.up.railway.app/api/dash';
+const AUTH_BASE = 'https://codereview-ai-production.up.railway.app/auth';
 
-// Simple TTL cache: { key: { data, ts } }
+// ── Auth ──
+
+function getToken() {
+    return sessionStorage.getItem('mr_token') || '';
+}
+
+function authHeaders() {
+    const token = getToken();
+    if (token) return { 'Authorization': `Bearer ${token}` };
+    return {};
+}
+
+function handleAuthError() {
+    sessionStorage.removeItem('mr_token');
+    window.location.href = '/login.html';
+}
+
+// ── Cache ──
+
 const _cache = {};
 const CACHE_TTL = 120000; // 2 minutes
 
@@ -32,13 +52,23 @@ function invalidateCache(prefix) {
     }
 }
 
+// ── Request helpers ──
+
 async function request(path, options = {}) {
     const url = `${API_BASE}${path}`;
     try {
         const resp = await fetch(url, {
-            headers: { 'Content-Type': 'application/json', ...options.headers },
+            headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders(),
+                ...options.headers,
+            },
             ...options,
         });
+        if (resp.status === 401) {
+            handleAuthError();
+            return;
+        }
         if (!resp.ok) {
             const err = await resp.json().catch(() => ({ detail: resp.statusText }));
             throw new Error(err.detail || `API error: ${resp.status}`);
@@ -60,6 +90,17 @@ async function cachedRequest(path) {
 
 export const api = {
     base: API_BASE,
+
+    // Auth
+    getMe: async () => {
+        const resp = await fetch(`${AUTH_BASE}/me`, { headers: authHeaders() });
+        if (resp.status === 401) { handleAuthError(); return; }
+        return await resp.json();
+    },
+    signOut: () => {
+        sessionStorage.removeItem('mr_token');
+        window.location.href = '/login.html';
+    },
 
     // Companies
     listCompanies: () => cachedRequest('/companies'),
@@ -87,8 +128,10 @@ export const api = {
         formData.append('file', file);
         const resp = await fetch(`${API_BASE}/${slug}/docs/classify`, {
             method: 'POST',
+            headers: authHeaders(),
             body: formData,
         });
+        if (resp.status === 401) { handleAuthError(); return; }
         if (!resp.ok) {
             const err = await resp.json().catch(() => ({ detail: resp.statusText }));
             throw new Error(err.detail || `Classify failed: ${resp.status}`);
@@ -109,8 +152,10 @@ export const api = {
         formData.append('gate', gate);
         const resp = await fetch(`${API_BASE}/${slug}/docs/upload`, {
             method: 'POST',
+            headers: authHeaders(),
             body: formData,
         });
+        if (resp.status === 401) { handleAuthError(); return; }
         if (!resp.ok) {
             const err = await resp.json().catch(() => ({ detail: resp.statusText }));
             throw new Error(err.detail || `Upload failed: ${resp.status}`);
