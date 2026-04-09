@@ -129,6 +129,41 @@
       color: var(--green-bright);
     }
 
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown > a { cursor: pointer; }
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 8px;
+      background: rgba(10,10,10,0.97);
+      border: 1px solid var(--border-green);
+      border-radius: 8px;
+      padding: 8px 0;
+      min-width: 200px;
+      z-index: 200;
+      backdrop-filter: blur(12px);
+    }
+    .nav-dropdown:hover .nav-dropdown-menu { display: block; }
+    .nav-dropdown-menu a {
+      display: block;
+      padding: 10px 20px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .nav-dropdown-menu a:hover {
+      color: var(--green-bright);
+      background: rgba(0,255,65,0.05);
+    }
+
     .topnav-cta {
       padding: 8px 20px !important;
       background: var(--green-bright) !important;
@@ -686,7 +721,14 @@
         <a href="#what">Product</a>
         <a href="#how-it-works">How It Works</a>
         <a href="#security">Security</a>
-        <a href="/compare/coderabbit.html">Compare</a>
+        <div class="nav-dropdown">
+          <a>Compare ▾</a>
+          <div class="nav-dropdown-menu">
+            <a href="/compare/coderabbit.html">vs CodeRabbit</a>
+            <a href="/compare/copilot.html">vs GitHub Copilot</a>
+            <a href="/compare/qodo.html">vs Qodo</a>
+          </div>
+        </div>
         <a href="support.html">Support</a>
         <a href="https://github.com/apps/matrixreview" class="topnav-cta" onclick="rdt('track','Lead')">Install Free &rarr;</a>
       </div>
