@@ -63,7 +63,8 @@
     @media (max-width: 600px) { h1 { font-size: 1.6rem; } .compare-table { font-size: 0.8rem; } .compare-table td, .compare-table th { padding: 8px 10px; } }
       .nav-dropdown { position: relative; }
     .nav-dropdown > a { cursor: pointer; }
-    .nav-dropdown-menu { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px; background: rgba(10,10,10,0.97); border: 1px solid rgba(0,255,65,0.12); border-radius: 8px; padding: 8px 0; min-width: 200px; z-index: 200; backdrop-filter: blur(12px); }
+    .nav-dropdown-menu { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); padding-top: 12px; z-index: 200; }
+    .nav-dropdown-menu-inner { background: rgba(10,10,10,0.97); border: 1px solid rgba(0,255,65,0.12); border-radius: 8px; padding: 8px 0; min-width: 200px; backdrop-filter: blur(12px); }
     .nav-dropdown:hover .nav-dropdown-menu { display: block; }
     .nav-dropdown-menu a { display: block; padding: 10px 20px; white-space: nowrap; }
     .nav-dropdown-menu a:hover { background: rgba(0,255,65,0.05); }
@@ -79,7 +80,7 @@
       <div class="topnav-links">
         <a href="/">Home</a>
         <a href="/security.html">Security</a>
-        <div class="nav-dropdown"><a>Compare ▾</a><div class="nav-dropdown-menu"><a href="/compare/coderabbit.html">vs CodeRabbit</a><a href="/compare/copilot.html"><strong>vs GitHub Copilot</strong></a><a href="/compare/qodo.html">vs Qodo</a></div></div>
+        <div class="nav-dropdown"><a>Compare ▾</a><div class="nav-dropdown-menu"><div class="nav-dropdown-menu-inner"><a href="/compare/coderabbit.html">vs CodeRabbit</a><a href="/compare/copilot.html"><strong>vs GitHub Copilot</strong></a><a href="/compare/qodo.html">vs Qodo</a></div></div></div>
         <a href="https://github.com/apps/matrixreview">Install Free</a>
       </div>
     </div>
