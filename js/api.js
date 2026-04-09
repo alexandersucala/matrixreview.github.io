@@ -2,28 +2,73 @@
  * MatrixReview Dashboard — API Client
  * 
  * Single source of truth for all backend API calls.
- * Every module imports this instead of making raw fetch calls.
- * Includes TTL cache for expensive read endpoints.
+ * Includes TTL cache and auth token management.
  * 
  * Save to: C:\Matrixreview.io\js\api.js
  */
 
 const API_BASE = 'https://codereview-ai-production.up.railway.app/api/dash';
 
-// Simple TTL cache: { key: { data, ts } }
-const _cache = {};
-const CACHE_TTL = 120000; // 2 minutes
+// ---------------------------------------------------------------
+// Auth token management
+// ---------------------------------------------------------------
 
-function cacheKey(path) { return path; }
+function getToken() {
+    return sessionStorage.getItem('mrx_token') || null;
+}
+
+function setToken(token) {
+    sessionStorage.setItem('mrx_token', token);
+}
+
+function clearToken() {
+    sessionStorage.removeItem('mrx_token');
+}
+
+function isAuthenticated() {
+    const token = getToken();
+    if (!token) return false;
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return false;
+        const payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+        return payload.exp > (Date.now() / 1000);
+    } catch(e) {
+        return false;
+    }
+}
+
+function getUser() {
+    const token = getToken();
+    if (!token) return null;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+        return {
+            github_login: payload.github_login,
+            avatar_url: payload.avatar_url,
+            slugs: payload.slugs || [],
+            repos: payload.repos || [],
+        };
+    } catch(e) {
+        return null;
+    }
+}
+
+// ---------------------------------------------------------------
+// TTL cache
+// ---------------------------------------------------------------
+
+const _cache = {};
+const CACHE_TTL = 120000;
 
 function getCached(path) {
-    const entry = _cache[cacheKey(path)];
+    const entry = _cache[path];
     if (entry && (Date.now() - entry.ts) < CACHE_TTL) return entry.data;
     return null;
 }
 
 function setCache(path, data) {
-    _cache[cacheKey(path)] = { data, ts: Date.now() };
+    _cache[path] = { data, ts: Date.now() };
 }
 
 function invalidateCache(prefix) {
@@ -32,13 +77,31 @@ function invalidateCache(prefix) {
     }
 }
 
+// ---------------------------------------------------------------
+// Request helper
+// ---------------------------------------------------------------
+
 async function request(path, options = {}) {
     const url = `${API_BASE}${path}`;
+    const headers = { 'Content-Type': 'application/json', ...options.headers };
+
+    const token = getToken();
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     try {
-        const resp = await fetch(url, {
-            headers: { 'Content-Type': 'application/json', ...options.headers },
-            ...options,
-        });
+        const resp = await fetch(url, { ...options, headers });
+
+        if (resp.status === 401) {
+            clearToken();
+            window.location.href = '/login.html#error=Session+expired.+Please+sign+in+again.';
+            throw new Error('Not authenticated');
+        }
+        if (resp.status === 403) {
+            throw new Error('Access denied to this repository');
+        }
+
         if (!resp.ok) {
             const err = await resp.json().catch(() => ({ detail: resp.statusText }));
             throw new Error(err.detail || `API error: ${resp.status}`);
@@ -58,8 +121,19 @@ async function cachedRequest(path) {
     return data;
 }
 
+// ---------------------------------------------------------------
+// Exports
+// ---------------------------------------------------------------
+
 export const api = {
     base: API_BASE,
+
+    // Auth
+    isAuthenticated,
+    getUser,
+    getToken,
+    setToken,
+    clearToken,
 
     // Companies
     listCompanies: () => cachedRequest('/companies'),
@@ -67,27 +141,29 @@ export const api = {
     // Overview
     getOverview: (slug) => cachedRequest(`/${slug}/overview`),
 
-    // Graph (cached - large payloads, rarely change)
+    // Graph
     getGraph: (slug, includeEdges = false) => cachedRequest(`/${slug}/graph?include_edges=${includeEdges}`),
     getGraphFile: (slug, path) => cachedRequest(`/${slug}/graph/file/${path}`),
     getEntryPoints: (slug) => cachedRequest(`/${slug}/graph/entry-points`),
     getSecurityFiles: (slug) => cachedRequest(`/${slug}/graph/security`),
     getHotspots: (slug, limit = 20) => cachedRequest(`/${slug}/graph/hotspots?limit=${limit}`),
 
-    // Health (cached)
+    // Health
     getHealth: (slug) => cachedRequest(`/${slug}/health`),
 
-    // Docs (cached - 291 docs is heavy)
+    // Docs
     getDocs: (slug, gate = null) => cachedRequest(`/${slug}/docs${gate ? `?gate=${gate}` : ''}`),
     getDoc: (slug, docId) => cachedRequest(`/${slug}/docs/${docId}`),
-
-    // Docs mutations (invalidate cache after)
     classifyDoc: async (slug, file) => {
         const formData = new FormData();
         formData.append('file', file);
+        const headers = {};
+        const token = getToken();
+        if (token) headers['Authorization'] = `Bearer ${token}`;
         const resp = await fetch(`${API_BASE}/${slug}/docs/classify`, {
             method: 'POST',
             body: formData,
+            headers,
         });
         if (!resp.ok) {
             const err = await resp.json().catch(() => ({ detail: resp.statusText }));
@@ -107,9 +183,13 @@ export const api = {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('gate', gate);
+        const headers = {};
+        const token = getToken();
+        if (token) headers['Authorization'] = `Bearer ${token}`;
         const resp = await fetch(`${API_BASE}/${slug}/docs/upload`, {
             method: 'POST',
             body: formData,
+            headers,
         });
         if (!resp.ok) {
             const err = await resp.json().catch(() => ({ detail: resp.statusText }));
@@ -127,7 +207,7 @@ export const api = {
         return result;
     },
 
-    // Reviews (cached)
+    // Reviews
     getReviews: (slug, page = 1, perPage = 20) => cachedRequest(`/${slug}/reviews?page=${page}&per_page=${perPage}`),
     getReviewStats: (slug) => cachedRequest(`/${slug}/reviews/stats`),
     getReviewsByAuthor: (slug, author) => cachedRequest(`/${slug}/reviews/by-author/${author}`),
