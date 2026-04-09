@@ -1,4 +1,3 @@
-========================================================================================
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -379,40 +378,8 @@
     </div>
 
     <script type="module">
-        import { api } from './js/api.js';
         import { init } from './js/orchestrator.js';
-
-        // Step 1: Check for OAuth callback token in URL hash
-        const hash = window.location.hash;
-        if (hash.startsWith('#token=')) {
-            const token = hash.substring(7);
-            api.setToken(token);
-            // Clean the URL
-            history.replaceState(null, '', window.location.pathname + window.location.search);
-        }
-
-        // Step 2: Check if authenticated
-        if (!api.isAuthenticated()) {
-            window.location.href = '/login.html';
-        } else {
-            // Step 3: Show user info in sidebar
-            const user = api.getUser();
-            if (user && user.avatar_url) {
-                const sidebar = document.querySelector('.dash-sidebar');
-                if (sidebar) {
-                    const userEl = document.createElement('div');
-                    userEl.style.cssText = 'margin-top:auto;padding:12px 0;text-align:center;';
-                    userEl.innerHTML = `
-                        <img src="${user.avatar_url}" style="width:28px;height:28px;border-radius:50%;border:1px solid #1e2a3a;" title="${user.github_login}">
-                        <div style="font-size:9px;color:#6b7a8d;margin-top:4px;cursor:pointer;" onclick="sessionStorage.removeItem('mrx_token');location.href='/login.html'">Sign out</div>
-                    `;
-                    sidebar.appendChild(userEl);
-                }
-            }
-
-            // Step 4: Initialize dashboard
-            init();
-        }
+        init();
     </script>
 </body>
 </html>
