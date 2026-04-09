@@ -59,6 +59,12 @@
     .footer-links a:hover { color: var(--green-bright); }
     .footer-copy { font-family: var(--font-mono); font-size: 0.8rem; color: rgba(0,255,65,0.3); margin-top: 12px; }
     @media (max-width: 600px) { h1 { font-size: 1.6rem; } .compare-table { font-size: 0.8rem; } .compare-table td, .compare-table th { padding: 8px 10px; } }
+      .nav-dropdown { position: relative; }
+    .nav-dropdown > a { cursor: pointer; }
+    .nav-dropdown-menu { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px; background: rgba(10,10,10,0.97); border: 1px solid rgba(0,255,65,0.12); border-radius: 8px; padding: 8px 0; min-width: 200px; z-index: 200; backdrop-filter: blur(12px); }
+    .nav-dropdown:hover .nav-dropdown-menu { display: block; }
+    .nav-dropdown-menu a { display: block; padding: 10px 20px; white-space: nowrap; }
+    .nav-dropdown-menu a:hover { background: rgba(0,255,65,0.05); }
   </style>
 </head>
 <body>
@@ -71,7 +77,7 @@
       <div class="topnav-links">
         <a href="/">Home</a>
         <a href="/security.html">Security</a>
-        <a href="/privacy.html">Privacy</a>
+        <div class="nav-dropdown"><a>Compare ▾</a><div class="nav-dropdown-menu"><a href="/compare/coderabbit.html">vs CodeRabbit</a><a href="/compare/copilot.html">vs GitHub Copilot</a><a href="/compare/qodo.html"><strong>vs Qodo</strong></a></div></div>
         <a href="https://github.com/apps/matrixreview">Install Free</a>
       </div>
     </div>
@@ -180,9 +186,9 @@
       <a href="/privacy.html">Privacy</a>
       <a href="/terms.html">Terms</a>
       <a href="/security.html">Security</a>
-      <a href="mailto:admin@matrixreview.io">Contact</a>
+      <a href="/cdn-cgi/l/email-protection#97f6f3fafef9d7faf6e3e5feefe5f2e1fef2e0b9fef8">Contact</a>
     </div>
-    <p class="footer-copy">&copy; <script>document.write(new Date().getFullYear())</script> MatrixReview</p>
+    <p class="footer-copy">&copy; <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear())</script> MatrixReview</p>
   </footer>
 
 <script>
@@ -206,13 +212,4 @@
       ctx.fillStyle = Math.random() > 0.95 ? '#ffffff' : '#00ff41';
       ctx.fillText(char, i * fontSize, drops[i] * fontSize);
       ctx.fillStyle = '#00ff41';
-      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-      drops[i]++;
-    }
-  }
-  setInterval(draw, 45);
-})();
-</script>
-
-</body>
-</html>
+      if (drops[i] *

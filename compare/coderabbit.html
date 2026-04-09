@@ -43,7 +43,13 @@
       font-family: var(--font-mono); font-size: 1.1rem; color: var(--green-bright);
       text-decoration: none; letter-spacing: 0.05em;
     }
-    .topnav-links { display: flex; gap: 24px; }
+    .topnav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-dropdown { position: relative; }
+    .nav-dropdown > a { cursor: pointer; }
+    .nav-dropdown-menu { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px; background: rgba(10,10,10,0.97); border: 1px solid rgba(0,255,65,0.12); border-radius: 8px; padding: 8px 0; min-width: 200px; z-index: 200; backdrop-filter: blur(12px); }
+    .nav-dropdown:hover .nav-dropdown-menu { display: block; }
+    .nav-dropdown-menu a { display: block; padding: 10px 20px; white-space: nowrap; }
+    .nav-dropdown-menu a:hover { background: rgba(0,255,65,0.05); }
     .topnav-links a {
       color: var(--text-secondary); text-decoration: none; font-size: 0.88rem;
       font-weight: 500; transition: color 0.2s;
@@ -160,7 +166,7 @@
       <div class="topnav-links">
         <a href="/">Home</a>
         <a href="/security.html">Security</a>
-        <a href="/privacy.html">Privacy</a>
+        <div class="nav-dropdown"><a>Compare ▾</a><div class="nav-dropdown-menu"><a href="/compare/coderabbit.html"><strong>vs CodeRabbit</strong></a><a href="/compare/copilot.html">vs GitHub Copilot</a><a href="/compare/qodo.html">vs Qodo</a></div></div>
         <a href="https://github.com/apps/matrixreview">Install Free</a>
       </div>
     </div>
