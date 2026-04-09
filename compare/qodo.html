@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MatrixReview vs Qodo — AI Code Review Comparison</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MatrixReview vs Qodo (formerly CodiumAI): document-grounded code review with hallucination guard vs trainable AI review with test generation. Detailed comparison for engineering teams.">
+  <meta name="keywords" content="Qodo alternative, Qodo vs, PR-Agent alternative, CodiumAI alternative, AI code review comparison, document-backed code review">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-bright: #00ff41; --green-mid: #00cc33; --green-dim: #00991a;
+      --border-green: rgba(0, 255, 65, 0.12); --bg-black: #000;
+      --text-primary: #e0e0e0; --text-secondary: #999;
+      --font-mono: 'Share Tech Mono', monospace; --font-body: 'Outfit', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg-black); color: var(--text-primary); font-family: var(--font-body); line-height: 1.8; }
+    .topnav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(0,0,0,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-green); padding: 0 24px; }
+    .topnav-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .topnav-brand { font-family: var(--font-mono); font-size: 1.1rem; color: var(--green-bright); text-decoration: none; letter-spacing: 0.05em; }
+    .topnav-links { display: flex; gap: 24px; }
+    .topnav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+    .topnav-links a:hover { color: var(--green-bright); }
+    #matrix-rain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.225; }
+    main, .topnav, footer { position: relative; z-index: 1; }
+    main { max-width: 820px; margin: 0 auto; padding: 120px 24px 80px; }
+    h1 { font-size: 2.4rem; font-weight: 800; color: #fff; margin-bottom: 8px; line-height: 1.2; }
+    h1 span { color: var(--green-bright); }
+    .subtitle { font-size: 1.05rem; color: var(--text-secondary); margin-bottom: 48px; line-height: 1.7; }
+    h2 { font-size: 1.3rem; font-weight: 700; color: #fff; margin-top: 56px; margin-bottom: 16px; }
+    p { margin-bottom: 16px; }
+    strong { color: #fff; }
+    a { color: var(--green-bright); }
+    code { background: rgba(0,255,65,0.08); padding: 2px 6px; border-radius: 3px; font-family: var(--font-mono); font-size: 0.88em; }
+    .compare-table { width: 100%; border-collapse: collapse; margin: 32px 0; font-size: 0.9rem; }
+    .compare-table th { text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--border-green); font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .compare-table th:first-child { color: var(--text-secondary); }
+    .compare-table th:nth-child(2) { color: var(--green-bright); }
+    .compare-table th:nth-child(3) { color: var(--text-secondary); }
+    .compare-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
+    .compare-table td:first-child { color: #fff; font-weight: 500; white-space: nowrap; }
+    .y { color: var(--green-bright); }
+    .n { color: #ff4444; }
+    .user-quote { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 16px 20px; margin: 16px 0; font-size: 0.9rem; font-style: italic; color: var(--text-secondary); }
+    .user-quote .source { display: block; margin-top: 8px; font-style: normal; font-size: 0.8rem; color: #555; }
+    .cta-box { text-align: center; margin: 64px 0 32px; padding: 48px 24px; background: rgba(0, 255, 65, 0.03); border: 1px solid var(--border-green); border-radius: 12px; }
+    .cta-box h2 { margin-top: 0; font-size: 1.5rem; }
+    .cta-box p { color: var(--text-secondary); margin-bottom: 24px; }
+    .cta-btn { display: inline-block; background: var(--green-bright); color: #000; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1rem; transition: transform 0.2s; }
+    .cta-btn:hover { transform: translateY(-2px); }
+    footer { border-top: 1px solid var(--border-green); padding: 32px 24px; text-align: center; }
+    .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+    .footer-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; }
+    .footer-links a:hover { color: var(--green-bright); }
+    .footer-copy { font-family: var(--font-mono); font-size: 0.8rem; color: rgba(0,255,65,0.3); margin-top: 12px; }
+    @media (max-width: 600px) { h1 { font-size: 1.6rem; } .compare-table { font-size: 0.8rem; } .compare-table td, .compare-table th { padding: 8px 10px; } }
+  </style>
+</head>
+<body>
+
+<canvas id="matrix-rain"></canvas>
+
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="/" class="topnav-brand">MatrixReview</a>
+      <div class="topnav-links">
+        <a href="/">Home</a>
+        <a href="/security.html">Security</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="https://github.com/apps/matrixreview">Install Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <h1>MatrixReview vs Qodo:<br><span>Your tool should come out of the box trained.</span></h1>
+    <p class="subtitle">Qodo (formerly CodiumAI) is a well-funded code review platform with test generation, IDE integrations, and broad platform support. But its review quality depends on how well you train it. MatrixReview comes out of the box trained. It reads your documentation, maps your codebase, and reviews from day one with no configuration and no training period.</p>
+
+    <h2>Trained vs. Built</h2>
+    <p>Qodo's Context Engine learns from your past PR diffs, comments, discussions, and resolved issues. Over time, it builds awareness of your patterns. The more you use it, the better it gets. That sounds good until you realize the implication: on day one, it knows nothing about your team. On day thirty, it knows what you've taught it. And if you taught it wrong, it learned wrong.</p>
+    <p>MatrixReview doesn't learn from interactions. It reads your documentation and maps your codebase during setup. Two minutes later, it knows your security policies, your architecture standards, your API semantics, and every dependency chain in your source code. It's not trained. It's constructed. The difference is that a trained tool is only as smart as its training. A constructed tool is as smart as your documentation and codebase from the first review.</p>
+
+    <h2>What Real Users Say About Qodo</h2>
+    <p>Qodo has genuine strengths. It earned Gartner Visionary recognition in 2025, raised $40M in Series A funding, and users praise its test generation. But the G2 reviews reveal a pattern:</p>
+
+    <div class="user-quote">
+      "The suggestions, that can be helpful at times, are inaccurate or irrelevant. I had a lot of time wasted and got frustrated."
+      <span class="source">G2 verified review</span>
+    </div>
+
+    <div class="user-quote">
+      "Teams often report Qodo generates many comments across PRs, but a significant portion are low-value suggestions or stylistic nitpicks rather than catching real bugs."
+      <span class="source">Third-party review, cubic.dev</span>
+    </div>
+
+    <div class="user-quote">
+      "Users experience bug issues with Qodo, including hallucinations and inaccurate suggestions that require manual corrections."
+      <span class="source">G2 verified review summary</span>
+    </div>
+
+    <p>Slow performance is the #1 documented complaint on G2. Steep learning curve is #2. These are structural consequences of a tool that requires training and configuration across multiple surfaces (PR review, IDE plugin, CLI, test generation, context engine) rather than coming out of the box ready to review.</p>
+
+    <h2>No Hallucination Guard</h2>
+    <p>Qodo does not have a hallucination guard. Its multi-agent architecture (Qodo 2.0, launched February 2026) uses specialized agents for bug detection, security, code quality, and test coverage. But none of those agents verify their own output against your documentation before posting. If an agent is wrong, it is confidently wrong. The engineer has to catch it.</p>
+    <p>MatrixReview's system is built to be skeptical of itself. Every finding runs through a second independent verification pass. If a finding contradicts the team's documentation or cannot be proven from it, it gets killed. The system is architecturally incapable of posting an unverified finding. It doesn't need training to avoid hallucinations. It's built to disprove itself at every step.</p>
+
+    <h2>Documentation: Training vs. Discovery</h2>
+    <p>Qodo's approach to documentation is similar to CodeRabbit's. You can configure review instructions via a <code>.pr_agent.toml</code> file, and the Context Engine learns from your interactions over time. But there is nothing deterministic about its document referencing. You train it, you hope it remembers the training, and you hope the training is relevant to the current PR. It's a better-than-nothing layer, not a trust layer.</p>
+    <p>MatrixReview scans your entire repository, discovers every documentation file, classifies each one into the appropriate review gate (Security, Architecture, Style, Onboarding, Legal), and builds a searchable knowledge base. Every finding cites the exact document, section, and line range that was violated. There is no training. There is no hoping. The documentation is discovered, classified, and enforced from the first review.</p>
+
+    <h2>Confidence and Provenance</h2>
+    <p>Qodo does not separate findings by confidence level. Everything posted is an AI suggestion. There is no distinction between a deterministic fact proven from your code structure and an AI opinion the model inferred from patterns. When everything looks the same, engineers have to evaluate every finding from scratch.</p>
+    <p>MatrixReview separates findings into three explicit tiers. Code-backed findings are deterministic, proven from the dependency graph with no LLM involved. Doc-backed findings cite the exact document and line range. AI suggestions are clearly labeled as optional. Your engineers always know what is a fact, what is policy, and what is an opinion.</p>
+
+    <h2>Codebase Understanding</h2>
+    <p>Qodo's Context Engine builds what they call a "knowledge graph" of your repository. In practice, this is a feedback graph: it indexes past PR diffs, comments, and discussions. It provides contextual awareness of what changed and why. On Enterprise, it extends across multiple repositories. This is useful for understanding the history and context of changes.</p>
+    <p>MatrixReview builds a deterministic import graph of every source file. Every file, every dependency chain, every entry point, every security-sensitive module. This is not contextual. This is structural. When a file changes, MatrixReview traces every downstream consumer and checks for breaking changes. A changed utility module that 134 files depend on gets flagged with the exact blast radius. Qodo's context engine may tell you a change "could affect" something. MatrixReview tells you exactly what it breaks and how many files are affected.</p>
+
+    <h2>Fix Generation</h2>
+    <p>Qodo generates "Agent Prompts" containing the issue context, affected code ranges, and suggested fix strategies. You paste this prompt into your coding assistant to generate the fix. It's a good starting point, but the fix itself is not verified against your documentation or codebase structure. It's the tool's best guess at a prompt that might fix the problem.</p>
+    <p>MatrixReview generates fixes with full context: the PR diff, the relevant documentation, and the import graph data. Before posting, the generated fix runs back through the entire five-gate review pipeline. If the fix would violate your security policy or architecture standards, it gets rejected. Only fixes that pass all five gates are posted. The tool verifies its own output.</p>
+
+    <h2>Review Gates</h2>
+    <p>Qodo 2.0 uses specialized agents that work in parallel: one for bug detection, one for security, one for code quality, one for test coverage. This is a real architectural improvement over single-pass review. But the output is still a single undifferentiated list of findings. There is no per-domain traffic light. An engineer scanning the review has to mentally categorize each finding by severity and domain.</p>
+    <p>MatrixReview organizes every review into five independent gates: Security, Architecture, Legal, Style, and Onboarding. Each gate gets its own traffic light (red, yellow, green). A red on Security is a stop-and-fix signal. A yellow on Style is advisory. Engineers can instantly prioritize without reading every finding.</p>
+
+    <h2>Setup and Configuration</h2>
+    <p>Qodo spans PR review, IDE plugin, CLI tool, test generation, and the context engine. Mastering all of these capabilities takes longer than a tool that does one thing well. Setup involves configuring a <code>.pr_agent.toml</code> file, and the tool improves as you interact with it. "Steep learning curve" is the #2 documented complaint on G2.</p>
+    <p>MatrixReview has one setup step: install the GitHub App. The system scans the codebase, discovers documentation, classifies every doc, and builds the import graph. The only manual step is confirming what was found. Two minutes from install to first review. No TOML files. No ongoing training. No multiple surfaces to configure. Every time a PR is reviewed and every time code is updated, the system retrains itself. You never worry about stale data.</p>
+
+    <h2>When Qodo Is the Better Choice</h2>
+    <p>If your team needs automated test generation alongside code review, Qodo is the only platform that combines both. If you're on GitLab, Bitbucket, or Azure DevOps, Qodo supports those platforms and MatrixReview currently does not. If you're in a regulated industry that requires air-gapped or self-hosted deployment, Qodo's open-source PR-Agent foundation makes that possible.</p>
+    <p>We respect Qodo's test generation, their open-source foundation, and their Gartner recognition. But test generation and platform breadth don't solve the trust problem. If your team needs to know whether a PR complies with your actual documentation, whether a change breaks downstream dependencies, and whether every finding is provably correct, that's what MatrixReview is built for. And you can use both.</p>
+
+    <h2>Feature Comparison</h2>
+    <table class="compare-table">
+      <thead>
+        <tr><th>Feature</th><th>MatrixReview</th><th>Qodo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Reviews against your docs</td><td class="y">Yes, auto-discovered and classified</td><td class="n">No (config-based instructions)</td></tr>
+        <tr><td>Codebase dependency graph</td><td class="y">Full deterministic import graph</td><td>Knowledge graph (feedback-based)</td></tr>
+        <tr><td>Blast radius analysis</td><td class="y">Traces all downstream files</td><td class="n">Contextual, not deterministic</td></tr>
+        <tr><td>Hallucination guard</td><td class="y">Two-pass verification</td><td class="n">No</td></tr>
+        <tr><td>Confidence tiers</td><td class="y">Code-backed, doc-backed, AI suggestion</td><td class="n">All findings equal</td></tr>
+        <tr><td>Review gates</td><td class="y">5 independent gates with traffic lights</td><td>Specialized agents, no traffic lights</td></tr>
+        <tr><td>Document citations</td><td class="y">Doc, section, line range</td><td class="n">No citations</td></tr>
+        <tr><td>Verified fix generation</td><td class="y">Fixes re-run through full pipeline</td><td>Agent prompts, not verified</td></tr>
+        <tr><td>Test generation</td><td class="n">No</td><td class="y">Yes (core differentiator)</td></tr>
+        <tr><td>Security tagging</td><td class="y">Auto-tags auth, crypto, payments, DB</td><td>Security agent, no auto-tagging</td></tr>
+        <tr><td>Setup time</td><td>2 minutes, no config</td><td>TOML config + training period</td></tr>
+        <tr><td>IDE integration</td><td class="n">No (PR review only)</td><td class="y">VS Code, JetBrains</td></tr>
+        <tr><td>Dashboard / analytics</td><td class="y">Health scoring, PR history, graph explorer</td><td>Enterprise plan only</td></tr>
+        <tr><td>Self-hosted / air-gapped</td><td class="n">No</td><td class="y">Yes (open-source PR-Agent)</td></tr>
+        <tr><td>Platforms</td><td>GitHub</td><td>GitHub, GitLab, Bitbucket, Azure DevOps, more</td></tr>
+        <tr><td>Pricing</td><td>Free</td><td>Free (30 reviews/mo), $30/seat Teams</td></tr>
+      </tbody>
+    </table>
+
+    <h2>The Real Difference</h2>
+    <p>Qodo has a lot of tools and features. Multi-agent review, test generation, IDE plugins, CLI workflows, cross-repo context. It's a broad platform. But breadth doesn't solve the core problem: can you trust the review output enough to ship based on it?</p>
+    <p>MatrixReview can not only identify what the problem is, but fix the problem for you, and tell you whether the fix itself is valid. No other tool on the market does that. You don't get rewarded for training a tool really well. You get rewarded for shipping code that works. MatrixReview is built to get you there.</p>
+
+    <div class="cta-box">
+      <h2>Trustworthy review from the first PR.</h2>
+      <p>Install MatrixReview on any GitHub repo. No training period. No configuration. Free.</p>
+      <a href="https://github.com/apps/matrixreview" class="cta-btn">Install on GitHub. Free.</a>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/security.html">Security</a>
+      <a href="mailto:admin@matrixreview.io">Contact</a>
+    </div>
+    <p class="footer-copy">&copy; <script>document.write(new Date().getFullYear())</script> MatrixReview</p>
+  </footer>
+
+<script>
+(function() {
+  const canvas = document.getElementById('matrix-rain');
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  const fontSize = 14;
+  const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ{}[]<>/\\|=+-*&^%$#@!';
+  const columns = Math.floor(canvas.width / fontSize);
+  const drops = new Array(columns).fill(1);
+  for (let i = 0; i < drops.length; i++) drops[i] = Math.random() * -100;
+  function draw() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ff41'; ctx.font = fontSize + 'px monospace';
+    for (let i = 0; i < drops.length; i++) {
+      if (drops[i] < 0) { drops[i]++; continue; }
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillStyle = Math.random() > 0.95 ? '#ffffff' : '#00ff41';
+      ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+      ctx.fillStyle = '#00ff41';
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+  setInterval(draw, 45);
+})();
+</script>
+
+</body>
+</html>
