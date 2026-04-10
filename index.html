@@ -1683,38 +1683,115 @@ import { rateLimiter } from '@/middleware/rateLimit';
 
         <!-- ANALYSIS (Could Not Fully Resolve) -->
         <div class="demo-scenario" id="demo-analysis" style="display:none;">
-          <div style="background:var(--bg-card);border:1px solid rgba(255,136,0,0.2);border-radius:6px;padding:24px;margin-bottom:16px;">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-              <span style="font-size:18px;">&#9881;&#65039;</span>
-              <span style="font-family:var(--font-mono);font-size:0.8rem;color:#ff8800;font-weight:600;">MatrixReview Fix — Could Not Fully Resolve</span>
-            </div>
-            <p style="font-size:0.9rem;line-height:1.6;color:var(--text-secondary);margin-bottom:16px;">
-              MatrixReview attempted to generate a compliant fix but could not clear all findings after 2 attempts. Instead of posting broken code, it explains exactly why and tells you what to do.
+          <!-- Mimics the actual GitHub PR comment output -->
+          <div style="background:var(--bg-card);border:1px solid var(--border-green);border-radius:6px;padding:24px;margin-bottom:16px;">
+
+            <!-- Header -->
+            <div style="font-size:1.1rem;font-weight:700;color:#e8ecf0;margin-bottom:16px;">&#9881;&#65039; MatrixReview Fix — Could Not Fully Resolve</div>
+            <p style="font-size:0.9rem;line-height:1.6;color:var(--text-secondary);margin-bottom:20px;">
+              MatrixReview attempted to generate a compliant fix but could not clear all findings after <strong style="color:var(--text-primary);">2 attempts</strong>.
             </p>
 
-            <div style="margin-bottom:16px;">
-              <div style="font-family:var(--font-mono);font-size:0.75rem;color:#ff8800;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Analysis</div>
-              <div style="background:#0d1117;border:1px solid #1e2a3a;border-radius:6px;padding:16px;font-size:0.85rem;line-height:1.7;color:var(--text-primary);">
-                <p style="margin-bottom:10px;"><strong style="color:#ff8800;">Broken Authorization Logic:</strong> The preHandler calls getDynamicSecret() with empty strings just to trigger permission checks. This bypasses proper authorization validation. The service method expects real parameters to verify access to a specific dynamic secret.</p>
-                <p style="margin-bottom:10px;"><strong style="color:#ff8800;">Missing Service Method:</strong> The handler calls server.services.dynamicSecret.getSshCaPublicKey() but this method doesn't exist in the codebase. The route is defined but the underlying service logic is not implemented.</p>
-                <p style="margin-bottom:10px;"><strong style="color:#ff8800;">Architecture Violation:</strong> SSH-specific functionality is added directly to the generic dynamic-secret-router.ts instead of following the proper service module pattern under src/ee/services/ssh/.</p>
-                <p><strong style="color:#ff8800;">Incomplete Implementation:</strong> The documentation references an automation endpoint that doesn't exist in the code.</p>
+            <!-- Analysis header -->
+            <div style="font-size:1rem;font-weight:600;color:#e8ecf0;margin-bottom:12px;">Analysis</div>
+
+            <!-- ANALYSIS block -->
+            <p style="font-size:0.88rem;line-height:1.7;color:var(--text-primary);margin-bottom:10px;">The fix attempt has fundamental structural problems that cannot be resolved with surface-level changes:</p>
+
+            <p style="font-size:0.88rem;line-height:1.7;color:var(--text-primary);margin-bottom:10px;">
+              <strong>Broken Authorization Logic:</strong> The preHandler calls getDynamicSecret() with empty strings (name: "", path: "/", environmentSlug: "", projectSlug: "") just to trigger permission checks. This is a hack that bypasses proper authorization validation. The service method expects real parameters to verify access to a specific dynamic secret, but you're passing placeholders.
+            </p>
+            <p style="font-size:0.88rem;line-height:1.7;color:var(--text-primary);margin-bottom:10px;">
+              <strong>Missing Service Method:</strong> The handler calls server.services.dynamicSecret.getSshCaPublicKey() but this method doesn't exist in the codebase. You've defined the route but not implemented the underlying service logic.
+            </p>
+            <p style="font-size:0.88rem;line-height:1.7;color:var(--text-primary);margin-bottom:10px;">
+              <strong>Architecture Violation:</strong> You're adding SSH-specific functionality directly to the generic dynamic-secret-router.ts instead of following the proper service module pattern. The SSH functionality should be in its own service module under src/ee/services/ssh/.
+            </p>
+            <p style="font-size:0.88rem;line-height:1.7;color:var(--text-primary);margin-bottom:20px;">
+              <strong>Incomplete Implementation:</strong> The documentation references an endpoint /api/v1/dynamic-secrets/ssh-ca-setup/&lt;dynamic-secret-id&gt; that doesn't exist in your code.
+            </p>
+
+            <!-- SUGGESTION block -->
+            <p style="font-size:0.88rem;line-height:1.7;color:var(--text-primary);margin-bottom:10px;">Start over with the correct architecture:</p>
+
+            <p style="font-size:0.88rem;line-height:1.7;color:var(--text-primary);margin-bottom:6px;"><strong>Create the SSH service method first:</strong></p>
+            <p style="font-size:0.85rem;line-height:1.7;color:var(--text-secondary);margin-bottom:10px;padding-left:16px;">
+              Add getSshCaPublicKey() method to the SSH service in backend/src/ee/services/ssh/. This method should handle both the CA key retrieval AND proper authorization validation for the specific dynamic secret ID.
+            </p>
+
+            <p style="font-size:0.88rem;line-height:1.7;color:var(--text-primary);margin-bottom:6px;"><strong>Fix the authorization:</strong></p>
+            <p style="font-size:0.85rem;line-height:1.7;color:var(--text-secondary);margin-bottom:10px;padding-left:16px;">
+              Don't use the preHandler hack. Instead, implement proper authorization inside the getSshCaPublicKey() service method. The service method should validate that the user has access to the specific dynamicSecretId before returning the CA public key.
+            </p>
+
+            <p style="font-size:0.88rem;line-height:1.7;color:var(--text-primary);margin-bottom:6px;"><strong>Follow the service module pattern:</strong></p>
+            <p style="font-size:0.85rem;line-height:1.7;color:var(--text-secondary);margin-bottom:10px;padding-left:16px;">
+              Either add this route to a dedicated SSH router in src/ee/routes/v1/ssh-router.ts OR properly integrate it into the dynamic-secret service by adding SSH-specific methods.
+            </p>
+
+            <p style="font-size:0.88rem;line-height:1.7;color:var(--text-primary);margin-bottom:16px;">
+              The current approach of patching the generic dynamic secret router with SSH-specific hacks will never pass review. You need to implement this as a proper SSH service feature.
+            </p>
+
+            <!-- Best attempt expandable -->
+            <details style="margin-bottom:12px;">
+              <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-secondary);padding:8px 0;">Best attempt (still has issues) &#x25BC;</summary>
+              <div style="background:#0d1117;border:1px solid #1e2a3a;border-radius:6px;padding:16px;margin-top:8px;font-family:var(--font-mono);font-size:0.8rem;line-height:1.6;color:var(--text-primary);overflow-x:auto;">
+                <div style="color:var(--text-secondary);margin-bottom:8px;">backend/src/ee/routes/v1/dynamic-secret-router.ts</div>
+<pre style="margin:0;white-space:pre-wrap;">server.route({
+  method: "GET",
+  url: "/ssh-ca-public-key/:dynamicSecretId",
+  config: {
+    rateLimit: readLimit
+  },
+  schema: {
+    params: z.object({
+      dynamicSecretId: z.string().uuid()
+    }),
+    response: {
+      200: z.object({
+        caPublicKey: z.string()
+      })
+    }
+  },
+  onRequest: verifyAuth([AuthMode.JWT,
+    AuthMode.IDENTITY_ACCESS_TOKEN]),
+  handler: async (req) => {
+    const { caPublicKey } = await server.services
+      .dynamicSecret.getSshCaPublicKey({
+        dynamicSecretId: req.params.dynamicSecretId,
+        actor: req.permission.type,
+        actorId: req.permission.id,
+        actorAuthMethod: req.permission.authMethod,
+        actorOrgId: req.permission.orgId
+      });
+    return { caPublicKey };
+  }
+});</pre>
               </div>
+            </details>
+
+            <!-- Why it still fails expandable -->
+            <details style="margin-bottom:16px;">
+              <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-secondary);padding:8px 0;">Why it still fails &#x25BC;</summary>
+              <div style="background:#0d1117;border:1px solid #1e2a3a;border-radius:6px;padding:16px;margin-top:8px;font-size:0.85rem;line-height:1.7;color:var(--text-primary);">
+                <div style="font-weight:600;color:#ff4444;margin-bottom:8px;">&#x1f534; MatrixReview — RED</div>
+                <div style="margin-bottom:6px;">&#x1f534; <strong>SECURITY</strong> — 4 findings (4 AI)</div>
+                <div style="margin-bottom:6px;">&#x1f7e1; <strong>ARCHITECTURE</strong> — 3 findings (3 doc-backed)</div>
+                <div style="margin-bottom:6px;">&#x1f7e2; <strong>LEGAL</strong> — No issues found</div>
+                <div style="margin-bottom:6px;">&#x1f7e1; <strong>STYLE</strong> — 4 findings (4 doc-backed)</div>
+                <div style="margin-bottom:6px;">&#x1f7e1; <strong>ONBOARDING</strong> — 1 findings (1 AI)</div>
+              </div>
+            </details>
+
+            <!-- Retry prompt -->
+            <div style="background:rgba(0,255,65,0.04);border:1px solid var(--border-green);border-radius:6px;padding:14px 16px;font-size:0.85rem;line-height:1.6;color:var(--text-secondary);">
+              Want to try again? Reply to this comment with additional context and MatrixReview will attempt another fix.<br><br>
+              <span style="color:var(--text-muted);font-style:italic;">Example: @matrixreview This script is only used in dev environments and doesn't need production-level auth.</span>
             </div>
 
-            <div style="margin-bottom:16px;">
-              <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--green-bright);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">What To Do Instead</div>
-              <div style="background:#0d1117;border:1px solid #1e2a3a;border-radius:6px;padding:16px;font-size:0.85rem;line-height:1.7;color:var(--text-primary);">
-                <p style="margin-bottom:8px;"><strong>1.</strong> Create the SSH service method first. Add getSshCaPublicKey() to the SSH service in backend/src/ee/services/ssh/ with proper authorization validation for the specific dynamic secret ID.</p>
-                <p style="margin-bottom:8px;"><strong>2.</strong> Don't use the preHandler hack. Implement proper authorization inside the service method instead of calling getDynamicSecret with empty strings.</p>
-                <p style="margin-bottom:8px;"><strong>3.</strong> Follow the service module pattern. Either add this route to a dedicated SSH router or properly integrate it into the dynamic-secret service.</p>
-                <p><strong>4.</strong> Implement the missing automation endpoint referenced in your documentation.</p>
-              </div>
-            </div>
+            <div style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);">Generated by MatrixReview</div>
 
-            <div style="padding:12px 16px;border-radius:4px;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(255,136,0,0.08);color:#ff8800;border:1px solid rgba(255,136,0,0.3);">
-              &#9888; Fix attempted 2x. Could not pass review pipeline. Full analysis posted with actionable next steps.
-            </div>
           </div>
         </div>
 
