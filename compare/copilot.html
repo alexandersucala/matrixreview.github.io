@@ -189,5 +189,12 @@
       ctx.fillStyle = Math.random() > 0.95 ? '#ffffff' : '#00ff41';
       ctx.fillText(char, i * fontSize, drops[i] * fontSize);
       ctx.fillStyle = '#00ff41';
-      if (drops[i] *
-
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+  setInterval(draw, 50);
+})();
+</script>
+</body>
+</html>
