@@ -45,10 +45,10 @@
     }
     .topnav-links { display: flex; gap: 24px; align-items: center; }
     .nav-dropdown { position: relative; }
-    .nav-dropdown > a { cursor: pointer; padding-bottom: 16px; margin-bottom: -16px; }
+    .nav-dropdown > a { cursor: pointer; }
     .nav-dropdown-menu { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); padding-top: 12px; z-index: 200; }
     .nav-dropdown-menu-inner { background: rgba(10,10,10,0.97); border: 1px solid rgba(0,255,65,0.12); border-radius: 8px; padding: 8px 0; min-width: 200px; backdrop-filter: blur(12px); }
-    /* JS controlled */
+    .nav-dropdown:hover .nav-dropdown-menu { display: block; }
     .nav-dropdown-menu a { display: block; padding: 10px 20px; white-space: nowrap; }
     .nav-dropdown-menu a:hover { background: rgba(0,255,65,0.05); }
     .topnav-links a {
@@ -167,23 +167,11 @@
       <div class="topnav-links">
         <a href="/">Home</a>
         <a href="/security.html">Security</a>
-        <div class="nav-dropdown"><a>Compare ▾</a><div class="nav-dropdown-menu"><div class="nav-dropdown-menu-inner"><a href="/compare/coderabbit.html"><strong>vs CodeRabbit</strong></a><a href="/compare/copilot.html">vs GitHub Copilot</a><a href="/compare/qodo.html">vs Qodo</a></div></div></div></div>
+        <div class="nav-dropdown"><a>Compare ▾</a><div class="nav-dropdown-menu"><div class="nav-dropdown-menu-inner"><a href="/compare/coderabbit.html"><strong>vs CodeRabbit</strong></a><a href="/compare/copilot.html">vs GitHub Copilot</a><a href="/compare/qodo.html">vs Qodo</a></div></div></div>
         <a href="https://github.com/apps/matrixreview">Install Free</a>
       </div>
     </div>
   </nav>
-  <script>
-  (function(){
-    var dd = document.querySelector(".nav-dropdown");
-    if(!dd) return;
-    var menu = dd.querySelector(".nav-dropdown-menu");
-    var t;
-    dd.onmouseenter = function(){ clearTimeout(t); menu.style.display="block"; };
-    dd.onmouseleave = function(){ t=setTimeout(function(){ menu.style.display="none"; },350); };
-    menu.onmouseenter = function(){ clearTimeout(t); };
-    menu.onmouseleave = function(){ t=setTimeout(function(){ menu.style.display="none"; },350); };
-  })();
-  </script>
 
   <main>
     <h1>MatrixReview vs CodeRabbit:<br><span>One gives opinions. The other gives facts.</span></h1>
