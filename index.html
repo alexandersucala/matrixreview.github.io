@@ -1623,11 +1623,13 @@
           When MatrixReview flags a finding, engineers click "Generate Fix" directly from the PR comment.
           Every fix runs back through the full review pipeline before posting.
           If the fix would violate your policies, it gets rejected.
+          If the fix can't pass review after two attempts, MatrixReview explains exactly why and tells you what to do instead.
         </p>
       </div>
 
       <div class="demo-tabs reveal" style="display:flex;gap:8px;margin:40px 0 24px;justify-content:center;">
         <button class="demo-tab active" data-demo="success" style="background:rgba(0,255,65,0.08);border:1px solid var(--green-bright);color:var(--green-bright);padding:10px 24px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;">Fix Generated</button>
+        <button class="demo-tab" data-demo="analysis" style="background:transparent;border:1px solid var(--border-green);color:var(--text-muted);padding:10px 24px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;">Could Not Resolve</button>
         <button class="demo-tab" data-demo="redirect" style="background:transparent;border:1px solid var(--border-green);color:var(--text-muted);padding:10px 24px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;">Needs Discussion</button>
         <button class="demo-tab" data-demo="reject" style="background:transparent;border:1px solid var(--border-green);color:var(--text-muted);padding:10px 24px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;">Architecture Violation</button>
       </div>
@@ -1675,6 +1677,43 @@ import { rateLimiter } from '@/middleware/rateLimit';
             </div>
             <div style="padding:12px 16px;border-radius:4px;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(0,255,65,0.08);color:var(--green-bright);border:1px solid var(--green-dark);">
               &#10003; Fix verified. Passed Security, Architecture, Style, Onboarding, Legal gates.
+            </div>
+          </div>
+        </div>
+
+        <!-- ANALYSIS (Could Not Fully Resolve) -->
+        <div class="demo-scenario" id="demo-analysis" style="display:none;">
+          <div style="background:var(--bg-card);border:1px solid rgba(255,136,0,0.2);border-radius:6px;padding:24px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+              <span style="font-size:18px;">&#9881;&#65039;</span>
+              <span style="font-family:var(--font-mono);font-size:0.8rem;color:#ff8800;font-weight:600;">MatrixReview Fix — Could Not Fully Resolve</span>
+            </div>
+            <p style="font-size:0.9rem;line-height:1.6;color:var(--text-secondary);margin-bottom:16px;">
+              MatrixReview attempted to generate a compliant fix but could not clear all findings after 2 attempts. Instead of posting broken code, it explains exactly why and tells you what to do.
+            </p>
+
+            <div style="margin-bottom:16px;">
+              <div style="font-family:var(--font-mono);font-size:0.75rem;color:#ff8800;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Analysis</div>
+              <div style="background:#0d1117;border:1px solid #1e2a3a;border-radius:6px;padding:16px;font-size:0.85rem;line-height:1.7;color:var(--text-primary);">
+                <p style="margin-bottom:10px;"><strong style="color:#ff8800;">Broken Authorization Logic:</strong> The preHandler calls getDynamicSecret() with empty strings just to trigger permission checks. This bypasses proper authorization validation. The service method expects real parameters to verify access to a specific dynamic secret.</p>
+                <p style="margin-bottom:10px;"><strong style="color:#ff8800;">Missing Service Method:</strong> The handler calls server.services.dynamicSecret.getSshCaPublicKey() but this method doesn't exist in the codebase. The route is defined but the underlying service logic is not implemented.</p>
+                <p style="margin-bottom:10px;"><strong style="color:#ff8800;">Architecture Violation:</strong> SSH-specific functionality is added directly to the generic dynamic-secret-router.ts instead of following the proper service module pattern under src/ee/services/ssh/.</p>
+                <p><strong style="color:#ff8800;">Incomplete Implementation:</strong> The documentation references an automation endpoint that doesn't exist in the code.</p>
+              </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+              <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--green-bright);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">What To Do Instead</div>
+              <div style="background:#0d1117;border:1px solid #1e2a3a;border-radius:6px;padding:16px;font-size:0.85rem;line-height:1.7;color:var(--text-primary);">
+                <p style="margin-bottom:8px;"><strong>1.</strong> Create the SSH service method first. Add getSshCaPublicKey() to the SSH service in backend/src/ee/services/ssh/ with proper authorization validation for the specific dynamic secret ID.</p>
+                <p style="margin-bottom:8px;"><strong>2.</strong> Don't use the preHandler hack. Implement proper authorization inside the service method instead of calling getDynamicSecret with empty strings.</p>
+                <p style="margin-bottom:8px;"><strong>3.</strong> Follow the service module pattern. Either add this route to a dedicated SSH router or properly integrate it into the dynamic-secret service.</p>
+                <p><strong>4.</strong> Implement the missing automation endpoint referenced in your documentation.</p>
+              </div>
+            </div>
+
+            <div style="padding:12px 16px;border-radius:4px;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(255,136,0,0.08);color:#ff8800;border:1px solid rgba(255,136,0,0.3);">
+              &#9888; Fix attempted 2x. Could not pass review pipeline. Full analysis posted with actionable next steps.
             </div>
           </div>
         </div>
