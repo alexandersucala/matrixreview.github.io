@@ -63,7 +63,7 @@
     .nav-dropdown > a { cursor: pointer; padding-bottom: 16px; margin-bottom: -16px; }
     .nav-dropdown-menu { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); padding-top: 12px; z-index: 200; }
     .nav-dropdown-menu-inner { background: rgba(10,10,10,0.97); border: 1px solid rgba(0,255,65,0.12); border-radius: 8px; padding: 8px 0; min-width: 200px; backdrop-filter: blur(12px); }
-    .nav-dropdown:hover .nav-dropdown-menu { display: block; }
+    /* JS controlled */
     .nav-dropdown-menu a { display: block; padding: 10px 20px; white-space: nowrap; }
     .nav-dropdown-menu a:hover { background: rgba(0,255,65,0.05); }
   </style>
@@ -83,6 +83,18 @@
       </div>
     </div>
   </nav>
+  <script>
+  (function(){
+    var dd = document.querySelector(".nav-dropdown");
+    if(!dd) return;
+    var menu = dd.querySelector(".nav-dropdown-menu");
+    var t;
+    dd.onmouseenter = function(){ clearTimeout(t); menu.style.display="block"; };
+    dd.onmouseleave = function(){ t=setTimeout(function(){ menu.style.display="none"; },350); };
+    menu.onmouseenter = function(){ clearTimeout(t); };
+    menu.onmouseleave = function(){ t=setTimeout(function(){ menu.style.display="none"; },350); };
+  })();
+  </script>
 
   <main>
     <h1>MatrixReview vs Qodo:<br><span>Your tool should come out of the box trained.</span></h1>
